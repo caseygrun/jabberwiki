@@ -1,0 +1,17 @@
+extends layout
+
+block content
+	h1 Search: #{term}
+
+	table.table
+		thead
+			tr
+				th Page
+				th Matching line
+		tbody
+			for match in matches
+				tr
+					td
+						a(href=wiki.url(match[0].path,'view'))
+							=match[0].path
+					td=match[2]

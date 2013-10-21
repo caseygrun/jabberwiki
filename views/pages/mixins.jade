@@ -1,0 +1,32 @@
+mixin tabs(active)
+	ul.nav.nav-tabs.pull-right
+		if active=='view'
+			li.active
+				a(href="view") View
+		else 
+			li
+				a(href="view") View
+		
+		if active=='edit'
+			li.active
+				a(href="edit") Edit
+		else 
+			li
+				a(href="edit") Edit
+		
+		if active=='log'
+			li.active
+				a(href="log") History
+		else 
+			li
+				a(href="log") History
+		
+
+mixin header(title, parents)
+	.page-header	
+		h1 #{title}
+	if parents && parents.length > 0 
+		ul.breadcrumb
+			for parent, i in parents
+				li: a(href=wiki.url( _.first(parents,i+1).join('/'), 'view' ))=parent
+				span.divider&nbsp;/&nbsp;

@@ -1,0 +1,37 @@
+extends ../index
+include mixins.jade
+
+block content
+	mixin tabs('log')
+	mixin header(title,parents)
+	
+	table.table
+		thead
+			tr
+				th(style="width:50%"): a(href=wiki.url(page,'view',v1))=(v1 || 'Current')
+				th(style="width:50%"): a(href=wiki.url(page,'view',v2))=(v2 || 'Current')
+				
+
+	div#mergeView
+		
+	div#fallback
+		textarea#v1
+			!{v1_page}
+
+		textarea#v2
+			!{v2_page}
+
+block scripts
+	script(type="text/javascript")
+		v1 = $('#v1').val();
+		v2 = $('#v2').val();
+
+		dv = CodeMirror.MergeView($('#mergeView').get(0), {
+			value: v2,
+			orig: v1,
+			lineNumbers: true,
+			mode: "text/html",
+			highlightDifferences: true
+		});
+
+		$('#fallback').hide()

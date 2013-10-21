@@ -1,0 +1,116 @@
+doctype 5
+html
+	head
+		title= title
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		link(rel='stylesheet', href='/css/styles.css')
+		link(rel="stylesheet", href="/css/bootstrap.min.css", media="screen")
+		link(rel="stylesheet", href="/lib/codemirror-3.15/lib/codemirror.css")
+		link(rel="stylesheet", href="/lib/codemirror-3.15/addon/merge/merge.css")
+
+		script(src="/lib/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
+	body
+		div.navbar.navbar-inverse.navbar-fixed-top 
+			div.navbar-inner
+				div.container-fluid
+					a.brand(href="#") Project
+					ul.nav
+						li: a(href=wiki.mainPage()): i.icon-home
+						li: a(href="/categories"): i.icon-tag 
+
+					ul.nav.pull-right
+						li: p.navbar-text
+							if user 
+								| Logged in as: 
+								a(href="#") #{user.email}
+							else 
+								a(href="/login") Login
+
+
+
+		div.container-fluid
+			div.row-fluid
+				div.span2
+					div.sidebar-nav
+						ul.nav.nav-list
+
+							li.nav-header Site
+							li: a(href=wiki.mainPage())
+								i.icon-home 
+								| Main Page
+							li: a(href="/categories") 
+								i.icon-tag
+								| Categories
+							li: a(href="/all") 
+								i.icon-list
+								| Index
+							li: a(href="/recent") 
+								i.icon-time
+								| Recent
+							li: a(href="/upload") 
+								i.icon-upload
+								| Upload
+							li: a(href="/help") 
+								i.icon-question-sign
+								| Help
+							li
+								form(action="/go", method="post")
+									.input-append
+										input#search.span4(name="search",type="text")
+
+										button.btn(name="action", value="search", type="submit") 
+											i.icon-search
+										button.btn(name="action", value="go", type="submit")
+											i.icon-chevron-right
+
+							li.nav-header Page
+
+							li 
+								a(href="raw") Source
+							li 
+								a(href="print") Print
+							li 
+								div.dropdown
+									a(href="#",data-toggle="dropdown").dropdown-toggle Export 
+										b.caret
+									ul.dropdown-menu(role="menu")
+										li: a(href="export/pdf") PDF
+										li: a(href="export/html") HTML
+										li: a(href="export/docx") Word (.docx)
+										li: a(href="export/latex") LaTeX
+										li: a(href="export/markdown") Markdown
+										li: a(href="export/rst") ReStructuredText
+										li.dropdown-submenu
+											a(href="export/slidy") Slideshow
+											ul.dropdown-menu
+												li: a(href="export/slidy") Slidy
+												li: a(href="export/slideous") Slideous
+												li: a(href="export/s5") S5
+												li: a(href="export/dzslides") DZSlides
+										li.dropdown-submenu
+											a(href="#") Other
+											ul.dropdown-menu
+												li: a(href="export/json") JSON
+												li: a(href="export/native") Native										
+
+
+							li 
+								a(href="") Delete
+							li 
+								a(href="") Rename
+
+				div.span10
+					block content
+
+			hr
+			footer 
+				p &copy; 2013
+
+		script(src="/js/jquery.js")
+		script(src="/js/bootstrap.min.js")
+		script(src="/lib/diff_match_patch/diff_match_patch.js")
+		script(src="/lib/codemirror-3.15/codemirror-compressed.js")
+
+
+		
+		block scripts

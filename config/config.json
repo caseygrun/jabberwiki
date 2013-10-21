@@ -1,0 +1,9 @@
+{
+	"store":{
+		"engine":"git",
+		"path":"data"
+	},
+	"pages":{
+		"defaultPageExt":"md"
+	}
+}

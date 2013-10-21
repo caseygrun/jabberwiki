@@ -1,0 +1,17 @@
+extends ../layout
+include mixins.jade
+
+
+block content
+	mixin header(title,parents)
+
+	table.table
+		thead
+			tr
+				th Page
+		tbody
+			for res in resources
+				tr
+					td
+						a(href=wiki.url(res.path,'view'))
+							=res.path

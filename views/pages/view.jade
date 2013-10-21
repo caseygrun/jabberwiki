@@ -1,0 +1,14 @@
+extends ../index
+include mixins.jade
+
+block content
+	mixin tabs('view')
+	mixin header(title,parents)
+	
+	if version
+		div.alert.alert-info
+			| Viewing version 
+			a(href="#")= version
+			|  of this page
+
+	!{content}

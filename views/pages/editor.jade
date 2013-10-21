@@ -1,0 +1,31 @@
+extends ../index
+include mixins.jade
+
+block content
+	mixin tabs('edit')
+	mixin header(title,parents)
+
+	form(action="edit", method="post")
+		p.alert.alert-info 
+			strong Edit page text 
+			| Edit the body of the page using Pandoc markdown
+
+		div.well
+
+			label(for="text") Page content
+			textarea#text(name="text",rows=12).input-block-level
+				!{content}
+
+			label(for="message") Commit message
+			textarea#message(name="message", rows=2).input-block-level
+
+		div.form-actions
+			input(type="submit").btn.btn-primary Save
+
+block scripts
+	script(type="text/javascript")
+		$(function() {
+			var editor = CodeMirror.fromTextArea(document.getElementById('text'),{
+					mode: 'gfm'
+				})
+		})

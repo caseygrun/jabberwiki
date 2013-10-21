@@ -1,0 +1,15 @@
+extends layout
+
+block content
+
+	form(action="/upload",enctype="multipart/form-data",method="post").form-horizontal
+
+		label(for="upload") File:
+		input(type="file",name="upload",multiple="multiple")
+		
+		label(for="title") File name (optional):
+		input(type="text",name="title")
+		
+	
+		div.form-actions
+				input(type="submit",value="Upload").btn.btn-primary
