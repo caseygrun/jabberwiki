@@ -116,7 +116,6 @@
       */
 
       parse = function(ast) {
-        debugger;
         var item, key, parsedUri, text, uri, _i, _len, _results;
         _results = [];
         for (_i = 0, _len = ast.length; _i < _len; _i++) {
