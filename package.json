@@ -17,6 +17,7 @@
     "tmp": "0.0.21",
     "URIjs": "1.11.2",
     "revisionary": "0.0.1",
+    "dockers":"0.0.1",
     "underscore": "~1.5.2",
     "mkdirp": "~0.3.5",
     "connect-flash": "0.1.1",

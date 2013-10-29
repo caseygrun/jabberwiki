@@ -291,22 +291,37 @@
               return next(err);
             }
             format = 'markdown';
-            return markup.convert(text, format, to, ['--self-contained'], function(err, text) {
-              if (err) {
-                return next(err);
-              }
-              switch (to) {
-                case 'html':
-                case 'slidy':
-                case 'slideous':
-                case 'dzslides':
-                case 's5':
-                  return res.send(text);
-                default:
-                  res.attachment("" + page + "." + to);
-                  return res.send(text);
-              }
-            });
+            switch (to) {
+              case 'docx':
+              case 'pdf':
+                return markup.convertFile(text, format, to, ['--self-contained'], function(err, filename) {
+                  if (err) {
+                    return next(err);
+                  }
+                  return res.download(filename, "" + page + "." + to, function(err) {
+                    if (err) {
+                      return next(err);
+                    }
+                  });
+                });
+              default:
+                return markup.convert(text, format, to, ['--self-contained'], function(err, text) {
+                  if (err) {
+                    return next(err);
+                  }
+                  switch (to) {
+                    case 'html':
+                    case 'slidy':
+                    case 'slideous':
+                    case 'dzslides':
+                    case 's5':
+                      return res.send(text);
+                    default:
+                      res.attachment("" + page + "." + to);
+                      return res.send(text);
+                  }
+                });
+            }
           },
           "default": function(err, type, result) {
             return res.redirect(wiki.url(page, 'view'));

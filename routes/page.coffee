@@ -213,15 +213,22 @@ module.exports = (app) ->
 				file: (err, text) ->
 					if err then return next(err)
 					format = 'markdown'	
-					markup.convert text, format, to, ['--self-contained'], (err, text) ->
-						if err then return next(err)
-						
-						switch to
-							when 'html','slidy','slideous','dzslides','s5'
-								res.send(text)
-							else
-								res.attachment("#{page}.#{to}")
-								res.send(text)
+					switch to
+						when 'docx','pdf'
+							markup.convertFile text, format, to, ['--self-contained'], (err, filename) ->
+								if err then return next(err)
+								res.download filename, "#{page}.#{to}", (err) ->
+									if err then return next(err)
+						else
+							markup.convert text, format, to, ['--self-contained'], (err, text) ->
+								if err then return next(err)
+								
+								switch to
+									when 'html','slidy','slideous','dzslides','s5'
+										res.send text
+									else
+										res.attachment "#{page}.#{to}" 
+										res.send text
 
 				default: (err,type,result) -> res.redirect(wiki.url(page,'view'))
 			}

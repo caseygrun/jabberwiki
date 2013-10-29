@@ -1,5 +1,5 @@
 (function() {
-  var QUnit, markup, q, util, wiki;
+  var QUnit, q, util, wiki;
 
   util = require('util');
 
@@ -179,52 +179,6 @@
     ];
     testDoc2_res = wiki.replaceWikiLinks(testDoc2);
     return q.deepEqual(testDoc2_res, testDoc2_expect, 'Image without fully qualified URI is changed to include a file path');
-  });
-
-  q.module('markup');
-
-  markup = require('../markup');
-
-  q.test('pipeline', function() {
-    var text1, text2;
-    text1 = "* Metadata: `[[metadata]]`\n* Categories: `[[#category]]`\n* Replacements: `{{replacement}}`\n	* Transclusion: `{{>page}}`\n	* Templates: `{{template|option1|option2|named_option=value}}`\n	* Alternatively:";
-    q.stop();
-    markup.pipeline(text1, 'markdown', 'html', [], [
-      function(tree, cb) {
-        q.ok(tree, 'A tree is passed to the first middleware');
-        return cb(null, tree);
-      }
-    ], function(err, html) {
-      q.ok(err == null, 'No error is raised in the pipeline');
-      q.ok(html != null, 'Some HTML is returned');
-      return q.start();
-    });
-    text2 = "[Test wikilink]()";
-    q.stop();
-    return markup.pipeline(text2, 'markdown', 'html', [], [
-      function(tree, cb) {
-        return cb(null, wiki.replaceWikiLinks(tree));
-      }
-    ], function(err, html) {
-      q.ok(err == null, 'No error is raised in the pipeline');
-      q.ok(html != null, 'Some HTML is returned');
-      q.equal(html, '<p><a href="/pages/Test%20wikilink.md/view">Test wikilink</a></p>\n', 'Returned HTML is correct');
-      return q.start();
-    });
-  });
-
-  q.test('convertFile', function() {
-    var text1;
-    text1 = "* Metadata: `[[metadata]]`\n* Categories: `[[#category]]`\n* Replacements: `{{replacement}}`\n	* Transclusion: `{{>page}}`\n	* Templates: `{{template|option1|option2|named_option=value}}`\n	* Alternatively:";
-    q.stop();
-    return markup.convertFile(text1, 'markdown', 'docx', [], function(err, filename) {
-      q.ok(err == null, 'No error on conversion');
-      if (err) {
-        console.log(err);
-      }
-      q.ok(filename, 'Temporary filename generated');
-      return q.start();
-    });
   });
 
 }).call(this);
