@@ -14,7 +14,6 @@
   module.exports = function(app) {
     var me;
     return me = {
-      recent: function(req, res, next) {},
       all: function(req, res, next) {
         var store;
         store = app.get('store');
@@ -51,6 +50,19 @@
           return res.render('search.jade', {
             term: term,
             matches: matches,
+            wiki: wiki
+          });
+        });
+      },
+      recent: function(req, res, next) {
+        var store;
+        store = app.get('store');
+        return store.log('', function(err, revisions) {
+          if (err) {
+            return next(err);
+          }
+          return res.render('recent.jade', {
+            revisions: revisions,
             wiki: wiki
           });
         });

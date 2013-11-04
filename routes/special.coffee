@@ -7,8 +7,6 @@ storejs = require('revisionary')
 
 module.exports = (app) ->
 	me = 
-		recent: (req,res,next) ->
-
 		all: (req,res,next) ->
 			store = app.get('store')
 
@@ -38,6 +36,14 @@ module.exports = (app) ->
 				if err then return next(err)
 
 				res.render('search.jade',{term: term, matches: matches, wiki: wiki})
+
+		recent: (req, res, next) ->
+			store = app.get('store')
+
+			store.log '', (err, revisions) ->
+				if err then return next(err)
+
+				res.render('recent.jade',{ revisions: revisions, wiki: wiki})				
 
 		uploader: (req, res, next) ->
 			res.render('upload.jade')
