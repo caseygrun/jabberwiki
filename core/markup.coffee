@@ -181,10 +181,10 @@ module.exports = me =
 	 * @param  {String} callback.result Output text
 	###
 	html: (text, from, options=[], callback) ->
-		options = options.concat ['--table-of-contents','--base-header-level=2','--mathjax']
+		options = options.concat ['--base-header-level=2','--mathjax','--smart']#['--table-of-contents','--base-header-level=2','--mathjax','--smart']
 		
 		# TODO: Include a template so Pandoc will render the TOC
-		me.pipeline(text, from, 'html', options, 
+		me.pipeline(text, from, 'html5', options, 
 			[ ( (tree, cb) -> cb(null,wiki.replaceWikiLinks(tree)) ) ], callback)
 
 		

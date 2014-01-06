@@ -53,8 +53,8 @@
       if (options == null) {
         options = [];
       }
-      options = options.concat(['--table-of-contents', '--base-header-level=2', '--mathjax']);
-      return me.pipeline(text, from, 'html', options, [
+      options = options.concat(['--base-header-level=2', '--mathjax', '--smart']);
+      return me.pipeline(text, from, 'html5', options, [
         (function(tree, cb) {
           return cb(null, wiki.replaceWikiLinks(tree));
         })
