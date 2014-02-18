@@ -11,7 +11,8 @@
       },
       page: require('./page')(app),
       special: require('./special')(app),
-      categories: require('./categories')(app)
+      categories: require('./categories')(app),
+      api: require('./api')(app)
     };
   };
 

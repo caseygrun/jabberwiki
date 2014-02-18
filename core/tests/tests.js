@@ -27,6 +27,14 @@
     return q.equal(wiki.filename('testDir/testFile'), 'testDir/testFile.md', 'File in folder');
   });
 
+  q.test('routeToRegExp', function() {
+    var route1, test1;
+    route1 = wiki.routeToRegExp('/pages/[page]/view');
+    test1 = '/pages/page1/view';
+    q.ok(route1.test(test1));
+    return q.deepEqual(test1.match(route1), [test1, 'page1']);
+  });
+
   q.test('replaceWikiLinks', function() {
     var testDoc1, testDoc1_expect, testDoc1_res;
     testDoc1 = [

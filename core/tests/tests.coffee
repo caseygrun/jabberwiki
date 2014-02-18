@@ -24,6 +24,13 @@ q.test 'filename', ->
 	q.equal wiki.filename('test/'), 'test/', 'Simple folder'
 	q.equal wiki.filename('testDir/testFile'), 'testDir/testFile.md', 'File in folder'
 
+q.test 'routeToRegExp', ->
+	route1 = wiki.routeToRegExp('/pages/[page]/view');
+	test1 = '/pages/page1/view'
+	q.ok(route1.test(test1))
+	q.deepEqual test1.match(route1),[test1, 'page1']
+
+
 q.test 'replaceWikiLinks', ->
 	testDoc1 = [{
 			"docTitle": [],

@@ -10,19 +10,41 @@ tempDir = process.env.TMP || process.env.TMPDIR || process.env.TEMP || '/tmp' ||
 
 
 module.exports = me =
+	###*
+	 * Generates a URL to the wiki's main page based on configuration options
+	 * @return {String} url
+	###
 	mainPage: () ->
 		me.url('Main','view')
 
+	###*
+	 * Converts a page name and verb, and optionally a revision ID to URL
+	 * @param  {String} page Page name
+	 * @param  {String} verb Verb (e.g. `edit`, `view`, etc.)
+	 * @param  {String} id Revision ID
+	 * @return {String} url
+	###
 	url: (page,verb,id) ->
 		p = pth.join('/pages',me.filename(page),verb)
 		if id then p = pth.join(p,id)
 
 		encodeURI(p)
 
+	###*
+	 * Generates a URL to the raw file for a particular resource
+	 * @param  {String} file Path to the page or resource
+	 * @return {String} url
+	###
 	fileUrl: (file) ->
 		p = pth.join('/files',me.filename(file))
 		encodeURI(p)
 
+	###*
+	 * Generates a valid filename for a particular page (appends the default 
+	 * file extension if one is missing)
+	 * @param  {String} page Page name
+	 * @return {String} filename
+	###
 	filename: (page) ->
 		if _.last(page) == '/' then page
 		else 
@@ -32,6 +54,40 @@ module.exports = me =
 				page + '.' + config.pages.defaultPageExt
 			else 
 				page
+
+	pageRegExp: /([\w\.\/%\(\)\{\}\[\] ]+)/, 
+	varRegExp: /(\w+)/,
+
+	###*
+	 * Accepts a string with one or more placeholders for pages or variables; 
+	 * converts this pattern into a regular expression that can match URLs.
+	 *
+	 * Patterns surrounded by [brackets] will be interpreted as placeholders
+	 * for wiki pages, and will be allowed to contain slashes. Patterns 
+	 * surrounded by {braces} will be interpreted as normal variables.
+	 * @param  {String} route Route including placeholders
+	 * @return {RegExp} regular expression describing the route
+	###
+	routeToRegExp: (route) ->
+
+		regExpToStrPartial = (r) ->
+			r = r.toString();
+			r.substring(1,r.length - 1);
+
+		pageRegExpStr = regExpToStrPartial(me.pageRegExp)
+		varRegExpStr = regExpToStrPartial(me.varRegExp)
+
+		# pageRegExpStr = me.pageRegExp.toString()
+		# pageRegExpStr = pageRegExpStr.substring(1,pageRegExpStr.length-1)
+		# varRegExpStr = me.varRegExp.toString()
+		# varRegExpStr = varRegExpStr.substring(1,varRegExpStr.length-1)
+
+
+		# http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+		route = route.replace(/[\-\/\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
+		route = route.replace(/\[\w+\]/,pageRegExpStr)
+		route = route.replace(/\{\w+\}/,varRegExpStr)
+		RegExp(route)
 
 	tempFile: (data,cb) ->
 		if !cb? 
@@ -59,6 +115,7 @@ module.exports = me =
 		callback(null,markup, metadata)
 
 
+	#
 	parsePath: (page) ->
 		basename = pth.basename(page)
 		base = basename.split('.')

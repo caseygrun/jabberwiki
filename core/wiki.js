@@ -16,9 +16,22 @@
   tempDir = process.env.TMP || process.env.TMPDIR || process.env.TEMP || '/tmp' || process.cwd();
 
   module.exports = me = {
+    /**
+    	 * Generates a URL to the wiki's main page based on configuration options
+    	 * @return {String} url
+    */
+
     mainPage: function() {
       return me.url('Main', 'view');
     },
+    /**
+    	 * Converts a page name and verb, and optionally a revision ID to URL
+    	 * @param  {String} page Page name
+    	 * @param  {String} verb Verb (e.g. `edit`, `view`, etc.)
+    	 * @param  {String} id Revision ID
+    	 * @return {String} url
+    */
+
     url: function(page, verb, id) {
       var p;
       p = pth.join('/pages', me.filename(page), verb);
@@ -27,11 +40,24 @@
       }
       return encodeURI(p);
     },
+    /**
+    	 * Generates a URL to the raw file for a particular resource
+    	 * @param  {String} file Path to the page or resource
+    	 * @return {String} url
+    */
+
     fileUrl: function(file) {
       var p;
       p = pth.join('/files', me.filename(file));
       return encodeURI(p);
     },
+    /**
+    	 * Generates a valid filename for a particular page (appends the default 
+    	 * file extension if one is missing)
+    	 * @param  {String} page Page name
+    	 * @return {String} filename
+    */
+
     filename: function(page) {
       var basename;
       if (_.last(page) === '/') {
@@ -44,6 +70,32 @@
           return page;
         }
       }
+    },
+    pageRegExp: /([\w\.\/%\(\)\{\}\[\] ]+)/,
+    varRegExp: /(\w+)/,
+    /**
+    	 * Accepts a string with one or more placeholders for pages or variables; 
+    	 * converts this pattern into a regular expression that can match URLs.
+    	 *
+    	 * Patterns surrounded by [brackets] will be interpreted as placeholders
+    	 * for wiki pages, and will be allowed to contain slashes. Patterns 
+    	 * surrounded by {braces} will be interpreted as normal variables.
+    	 * @param  {String} route Route including placeholders
+    	 * @return {RegExp} regular expression describing the route
+    */
+
+    routeToRegExp: function(route) {
+      var pageRegExpStr, regExpToStrPartial, varRegExpStr;
+      regExpToStrPartial = function(r) {
+        r = r.toString();
+        return r.substring(1, r.length - 1);
+      };
+      pageRegExpStr = regExpToStrPartial(me.pageRegExp);
+      varRegExpStr = regExpToStrPartial(me.varRegExp);
+      route = route.replace(/[\-\/\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+      route = route.replace(/\[\w+\]/, pageRegExpStr);
+      route = route.replace(/\{\w+\}/, varRegExpStr);
+      return RegExp(route);
     },
     tempFile: function(data, cb) {
       if (cb == null) {

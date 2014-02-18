@@ -4,6 +4,7 @@
  */
 
 var express = require('express')
+  , pages = require('./core/page')
   , routes = require('./routes')
   , config = require('./config/config')
 
@@ -162,27 +163,61 @@ app.post('/login',
 
 app.get('/', routes.index);
 
-app.get(/^\/pages\/([\w\.\/% ]+)\/view$/, auth('html'), routes.page.view);
-app.get(/^\/pages\/([\w\.\/% ]+)\/view\/([\w]+)$/, auth('html'), routes.page.view);
-app.get(/^\/pages\/([\w\.\/% ]+)\/diff\/([\w]+)\/([\w]+)$/, auth('html'), routes.page.diff);
+
+pages.init(app,{
+	middleware: [auth('html')],
+	tools: [{
+		route: '/pages/[page]/view',
+		action: routes.page.view
+	},{
+		route: '/pages/[page]/edit',
+		action: routes.page.edit
+	},{
+		route: '/pages/[page]/diff/{v1}/{v2}',
+		action: routes.page.diff
+	},{
+		route: '/pages/[page]/edit',
+		action: routes.page.editor
+	},{
+		route: '/pages/[page]/log',
+		action: routes.page.log
+	},{
+		route: '/pages/[page]/print',
+		action: routes.page.print
+	},{
+		route: '/pages/[page]/export/{format}',
+		action: routes.page.export
+	},{
+		route: '/pages/[page]/raw',
+		action: routes.page.raw
+	},{
+		route: '/files/[page]/',
+		action: routes.page.raw
+	}],
+
+})
+
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/view$/, auth('html'), routes.page.view);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/view\/([\w]+)$/, auth('html'), routes.page.view);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/diff\/([\w]+)\/([\w]+)$/, auth('html'), routes.page.diff);
 
 
-app.get(/^\/pages\/([\w\.\/% ]+)\/edit$/, auth('html'), routes.page.editor);
-app.get(/^\/pages\/([\w\.\/% ]+)\/log$/, auth('html'), routes.page.log);
-app.get(/^\/pages\/([\w\.\/% ]+)\/print$/, auth('html'), routes.page.print);
-app.get(/^\/pages\/([\w\.\/% ]+)\/export\/([\w\. ]+)$/, auth('html'), routes.page.export);
-app.get(/^\/pages\/([\w\.\/% ]+)\/raw$/, auth('html'), routes.page.raw);
-app.get(/^\/files\/([\w\.\/% ]+)\/?/, auth('html'), routes.page.raw);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/edit$/, auth('html'), routes.page.editor);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/log$/, auth('html'), routes.page.log);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/print$/, auth('html'), routes.page.print);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/export\/([\w\. ]+)$/, auth('html'), routes.page.export);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/raw$/, auth('html'), routes.page.raw);
+// app.get(/^\/files\/([\w\.\/%\(\)\{\}\[\] ]+)\/?/, auth('html'), routes.page.raw);
 
 
 
-app.post(/^\/pages\/([\w\.\/% ]+)\/edit$/, auth('html'), routes.page.edit);
-app.post(/^\/pages\/([\w\.\/% ]+)\/remove$/, auth('html'), routes.page.remove);
-app.post(/^\/pages\/([\w\.\/% ]+)\/move$/, auth('html'), routes.page.move);
+// app.post(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/edit$/, auth('html'), routes.page.edit);
+// app.post(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/remove$/, auth('html'), routes.page.remove);
+// app.post(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/move$/, auth('html'), routes.page.move);
 
-app.get(/^\/pages\/([\w\.\/% ]+)\/discuss$/, auth('html'), routes.page.discuss.view);
-app.get(/^\/pages\/([\w\.\/% ]+)\/discuss\/edit$/, auth('html'), routes.page.discuss.editor);
-app.post(/^\/pages\/([\w\.\/% ]+)\/discuss\/edit$/, auth('html'), routes.page.discuss.edit);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/discuss$/, auth('html'), routes.page.discuss.view);
+// app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/discuss\/edit$/, auth('html'), routes.page.discuss.editor);
+// app.post(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/discuss\/edit$/, auth('html'), routes.page.discuss.edit);
 
 app.get('/categories', auth('html'), routes.categories.list)
 app.get(/^\/categories\/([\w\.\/ ]+)/, auth('html'), routes.categories.view)
@@ -196,6 +231,9 @@ app.get('/all', auth('html'), routes.special.all)
 app.post('/go', auth('html'), routes.special.go)
 app.post('/search', auth('html'), routes.special.search)
 
+app.get('/api/search',auth('json'), routes.api.search)
+app.get('/api/all',auth('json'), routes.api.all)
+app.get('/api/index',auth('json'), routes.api.index)
 
 
 http.createServer(app).listen(app.get('port'), function(){

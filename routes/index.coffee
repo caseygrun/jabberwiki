@@ -7,5 +7,6 @@ module.exports = (app) ->
 	page: require('./page')(app)
 	special: require('./special')(app)
 	categories: require('./categories')(app)
+	api: require('./api')(app)
 
 
