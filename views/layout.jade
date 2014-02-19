@@ -10,7 +10,6 @@ html
 		link(rel="stylesheet", href="/lib/codemirror-3.15/lib/codemirror.css")
 		link(rel="stylesheet", href="/lib/codemirror-3.15/addon/merge/merge.css")
 		link(rel="stylesheet", href="/lib/jquery.tocify.js/css/jquery.tocify.css")
-
 		script(src="/lib/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
 	body
 		div.navbar.navbar-inverse.navbar-fixed-top 
@@ -68,7 +67,7 @@ html
 					form.navbar-form.navbar-right(role="search", action="/go", method="post")
 						.form-group
 							.input-group(style="width:300px")
-								input(type="text", name="search" placeholder="Search").form-control
+								input#search(type="text", name="search" placeholder="Search", autocomplete="off").form-control
 								.input-group-btn
 									button.btn.btn-default(name="action", value="search", type="submit") 
 										i.glyphicon.glyphicon-search
@@ -86,11 +85,7 @@ html
 
 		div.container-fluid
 			div.row-fluid
-				div.col-md-3
-					
-					div#toc
-
-				div#content.col-md-9
+				div.col-md-12
 					block content
 
 			hr
@@ -98,12 +93,17 @@ html
 				p &copy; 2013
 
 		script(src="/js/jquery.js")
+		script(src="/js/underscore-min.js")
 		script(src="/lib/bootstrap/js/bootstrap.min.js")
 		script(src="/js/collapsible.js")
 		script(src="/lib/diff_match_patch/diff_match_patch.js")
 		script(src="/lib/codemirror-3.15/codemirror-compressed.js")
 		script(src="/lib/jquery-ui-custom/jquery-ui-1.10.3.custom.js")
 		script(src="/lib/jquery.tocify.js/js/jquery.tocify.js")
+		//- script(src="/lib/typeahead.js/typeahead.bundle.min.js")
+		script(src="/lib/typeahead.js/bloodhound.js")
+		script(src="/lib/bootstrap-3-typeahead/bootstrap3-typeahead.js")
+
 		script(src="/js/script.js")
 		
 		block scripts
