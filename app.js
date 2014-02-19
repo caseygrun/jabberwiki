@@ -11,6 +11,7 @@ var express = require('express')
   , expressValidator = require('express-validator')
   , bunyan = require('bunyan')
   , _ = require('underscore')
+  , moment = require('moment')
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
 
@@ -18,6 +19,7 @@ var express = require('express')
   , store = require('revisionary')
   , wiki = require('wiki')
   , markup = require('markup')
+  , authentication = require('./core/auth')
 
   , http = require('http')
   , path = require('path');
@@ -41,19 +43,11 @@ app.set('log',bunyan.createLogger({name: "wiki", streams: [{
 app.locals({
 	_ : _,
 	wiki: wiki,
-	markup: markup
+	markup: markup,
+	moment: moment,
 })
 
-// authentication
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    if (username && password) {
-    	done(null, { email: username })
-    } else {
-    	done(null, false, 'Incorrect username or password')
-    }
-  }
-));
+
 
 
 app.use(express.favicon());
@@ -66,8 +60,8 @@ app.use(expressValidator());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
 app.use(express.session());
-app.use(passport.initialize());
-app.use(passport.session());
+
+authentication.configure(app)
 
 app.use(app.router);
 app.use(require('less-middleware')({ src: __dirname + '/public' }));
@@ -84,26 +78,8 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-// authentication
-passport.serializeUser(function(user, done) {
-  done(null, user.email);
-});
 
-passport.deserializeUser(function(email, done) {
-  done(null, {email: email})
-});
-
-function auth(format) {
-	format || (format = 'html')
-	switch(format) {
-		case 'html':
-		default:
-			return function(req,res,next) {
-				if (req.isAuthenticated()) { res.locals.user = req.user; return next(); }
-		  		res.redirect('/login')
-			} 
-	}
-}
+auth = authentication.auth
 
 // set up repository
 app.set('store', (function() {
@@ -150,16 +126,6 @@ app.set('store', (function() {
 
 routes = routes(app)
 
-// configure routes
-app.get('/login',function(req,res,next) {
-	res.render('login.jade')
-})
-app.post('/login',
-  passport.authenticate('local', { successRedirect: '/',
-                                   failureRedirect: '/login',
-                                   failureFlash: true })
-);
-
 
 app.get('/', routes.index);
 
@@ -170,14 +136,15 @@ pages.init(app,{
 		route: '/pages/[page]/view',
 		action: routes.page.view
 	},{
-		route: '/pages/[page]/edit',
-		action: routes.page.edit
-	},{
 		route: '/pages/[page]/diff/{v1}/{v2}',
 		action: routes.page.diff
 	},{
 		route: '/pages/[page]/edit',
 		action: routes.page.editor
+	},{
+		route: '/pages/[page]/edit',
+		action: routes.page.edit,
+		method: 'post'
 	},{
 		route: '/pages/[page]/log',
 		action: routes.page.log
