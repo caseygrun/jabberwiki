@@ -60,7 +60,7 @@ module.exports = (app) ->
 						(cb) -> wiki.preprocess(page,text,cb)
 						(text,metadata,cb) ->
 							format = 'markdown'
-							markup.html(text,format,[],(err, html) -> cb(err,html,metadata))
+							markup.html(text,{from: format},(err, html) -> cb(err,html,metadata))
 
 					], (err, html, metadata) -> 
 						if err? then return next(err)
@@ -185,7 +185,7 @@ module.exports = (app) ->
 						(cb) -> wiki.preprocess(page,text,cb)
 						(text,metadata,cb) ->
 							format = 'markdown'
-							markup.html(text,format,[],(err, html) -> cb(err,html,metadata))
+							markup.html(text,{from: format},(err, html) -> cb(err,html,metadata))
 
 					], (err, html, metadata) -> 
 						if err? then return next(err)
@@ -217,12 +217,12 @@ module.exports = (app) ->
 					format = 'markdown'	
 					switch to
 						when 'docx','pdf'
-							markup.convertFile text, format, to, ['--self-contained'], (err, filename) ->
+							markup.convertFile text, {from: format, to: to, '--self-contained':true }, (err, filename) ->
 								if err then return next(err)
 								res.download filename, "#{page}.#{to}", (err) ->
 									if err then return next(err)
 						else
-							markup.convert text, format, to, ['--self-contained'], (err, text) ->
+							markup.convert text, {from: format, to: to, '--self-contained':true }, (err, text) ->
 								if err then return next(err)
 								
 								switch to

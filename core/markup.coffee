@@ -157,34 +157,33 @@ module.exports = me =
 	# 		pdcToFile text, from, to, outputFile, options, (err, data) -> 
 	# 			callback(err, outputFile)
 	
-	pipeline: (text, from, to, options, middleware, callback) ->
-		dockers.pipeline(text, from, to, options, middleware, callback)
+	pipeline: (text, options, middleware, callback) ->
+		dockers.pipeline(text, options, middleware, callback)
 
-	pipelineFile: (text, from, to, options, middleware, callback) ->
+	pipelineFile: (text, options, middleware, callback) ->
 		# pipeline(text, from, to, options, middleware, me.convertFile, callback)
 
-	convert: (text, from, to, options=[], callback) ->
-		dockers.convert(text, from, to, options, callback)
+	convert: (text, options={}, callback) ->
+		dockers.convert(text, options, callback)
 		# callback(text)
 	
-	convertFile: (text, from, to, options, callback) ->
-		dockers.convertFile(text,from,to,options,callback)
+	convertFile: (text, options={}, callback) ->
+		dockers.convertFile(text, options, callback)
 
 
 	###*
 	 * Converts input `text` from a source format to HTML after performing wiki-link replacement
 	 * @param  {String} text Input text
-	 * @param  {String} from Input format (e.g. `markdown`, `html`, `latex`, etc.)
-	 * @param  {String[]} [options=[]] Array of command line arguments
+	 * @param  {Object} [options={}] Hash of command line arguments
 	 * @param  {Function} callback Callback to be executed upon completion
 	 * @param  {Error} callback.err Error if one occurs
 	 * @param  {String} callback.result Output text
 	###
-	html: (text, from, options=[], callback) ->
-		options = options.concat ['--base-header-level=2','--mathjax','--smart']#['--table-of-contents','--base-header-level=2','--mathjax','--smart']
+	html: (text, options={}, callback) ->
+		options = _.extend( { to: 'html5', '--base-header-level':'2','--mathjax':true,'--smart':true}, options ) #['--table-of-contents','--base-header-level=2','--mathjax','--smart']
 		
 		# TODO: Include a template so Pandoc will render the TOC
-		me.pipeline(text, from, 'html5', options, 
+		me.pipeline(text, options, 
 			[ ( (tree, cb) -> cb(null,wiki.replaceWikiLinks(tree)) ) ], callback)
 
 		

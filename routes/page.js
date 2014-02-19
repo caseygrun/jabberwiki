@@ -88,7 +88,9 @@
               }, function(text, metadata, cb) {
                 var format;
                 format = 'markdown';
-                return markup.html(text, format, [], function(err, html) {
+                return markup.html(text, {
+                  from: format
+                }, function(err, html) {
                   return cb(err, html, metadata);
                 });
               }
@@ -247,7 +249,9 @@
               }, function(text, metadata, cb) {
                 var format;
                 format = 'markdown';
-                return markup.html(text, format, [], function(err, html) {
+                return markup.html(text, {
+                  from: format
+                }, function(err, html) {
                   return cb(err, html, metadata);
                 });
               }
@@ -295,7 +299,11 @@
             switch (to) {
               case 'docx':
               case 'pdf':
-                return markup.convertFile(text, format, to, ['--self-contained'], function(err, filename) {
+                return markup.convertFile(text, {
+                  from: format,
+                  to: to,
+                  '--self-contained': true
+                }, function(err, filename) {
                   if (err) {
                     return next(err);
                   }
@@ -306,7 +314,11 @@
                   });
                 });
               default:
-                return markup.convert(text, format, to, ['--self-contained'], function(err, text) {
+                return markup.convert(text, {
+                  from: format,
+                  to: to,
+                  '--self-contained': true
+                }, function(err, text) {
                   if (err) {
                     return next(err);
                   }
