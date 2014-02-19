@@ -3,22 +3,79 @@ html
 	head
 		title= title
 		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		meta(charset="utf-8") 
 		link(rel='stylesheet', href='/css/styles.css')
-		link(rel="stylesheet", href="/css/bootstrap.min.css", media="screen")
+		link(rel='stylesheet', href='/css/collapsible.css')
+		link(rel="stylesheet", href="/lib/bootstrap/css/bootstrap.min.css", media="screen")
 		link(rel="stylesheet", href="/lib/codemirror-3.15/lib/codemirror.css")
 		link(rel="stylesheet", href="/lib/codemirror-3.15/addon/merge/merge.css")
+		link(rel="stylesheet", href="/lib/jquery.tocify.js/css/jquery.tocify.css")
 
 		script(src="/lib/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
 	body
 		div.navbar.navbar-inverse.navbar-fixed-top 
-			div.navbar-inner
-				div.container-fluid
-					a.brand(href="#") Project
-					ul.nav
-						li: a(href=wiki.mainPage()): i.icon-home
-						li: a(href="/categories"): i.icon-tag 
+			div.container-fluid
+				.navbar-header
+					button.navbar-toggle(data-toggle="collapse", data-target="#navbar-collapse")
+						span.sr-only Toggle Navigation
+						span.icon-bar
+						span.icon-bar
+						span.icon-bar
+					a.navbar-brand(href="#") Project
 
-					ul.nav.pull-right
+				div#navbar-collapse.collapse.navbar-collapse
+					ul.nav.navbar-nav
+						li: a(href=wiki.mainPage()): i.glyphicon.glyphicon-home
+						li: a(href="/categories"): i.glyphicon.glyphicon-tag 
+						li: a(href="/all"): i.glyphicon.glyphicon-list 
+						li: a(href="/recent"): i.glyphicon.glyphicon-time 
+						li: a(href="/upload"): i.glyphicon.glyphicon-upload 
+						li: a(href="/help"): i.glyphicon.glyphicon-question-sign 
+
+					ul.nav.navbar-nav
+						li 
+							a(href="raw") Source
+						li 
+							a(href="print") Print
+						li.dropdown
+							a(href="#",data-toggle="dropdown").btn.dropdown-toggle Export 
+								b.caret
+							ul.dropdown-menu(role="menu")
+								li: a(href="export/pdf") PDF
+								li: a(href="export/html") HTML
+								li: a(href="export/docx") Word (.docx)
+								li: a(href="export/latex") LaTeX
+								li: a(href="export/markdown") Markdown
+								li: a(href="export/rst") ReStructuredText
+								li.dropdown-submenu
+									a(href="export/slidy") Slideshow
+									ul.dropdown-menu
+										li: a(href="export/slidy") Slidy
+										li: a(href="export/slideous") Slideous
+										li: a(href="export/s5") S5
+										li: a(href="export/dzslides") DZSlides
+								li.dropdown-submenu
+									a(href="#") Other
+									ul.dropdown-menu
+										li: a(href="export/json") JSON
+										li: a(href="export/native") Native										
+
+						li 
+							a(href="") Delete
+						li 
+							a(href="") Rename
+
+					form.navbar-form.navbar-right(role="search", action="/go", method="post")
+						.form-group
+							.input-group(style="width:300px")
+								input(type="text", name="search" placeholder="Search").form-control
+								.input-group-btn
+									button.btn.btn-default(name="action", value="search", type="submit") 
+										i.glyphicon.glyphicon-search
+									button.btn.btn-default(name="action", value="go", type="submit")
+										i.glyphicon.glyphicon-chevron-right
+
+					ul.nav.navbar-nav.navbar-right
 						li: p.navbar-text
 							if user 
 								| Logged in as: 
@@ -27,79 +84,13 @@ html
 								a(href="/login") Login
 
 
-
 		div.container-fluid
 			div.row-fluid
-				div.span2
-					div.sidebar-nav
-						ul.nav.nav-list
+				div.col-md-3
+					
+					div#toc
 
-							li.nav-header Site
-							li: a(href=wiki.mainPage())
-								i.icon-home 
-								| Main Page
-							li: a(href="/categories") 
-								i.icon-tag
-								| Categories
-							li: a(href="/all") 
-								i.icon-list
-								| Index
-							li: a(href="/recent") 
-								i.icon-time
-								| Recent
-							li: a(href="/upload") 
-								i.icon-upload
-								| Upload
-							li: a(href="/help") 
-								i.icon-question-sign
-								| Help
-							li
-								form(action="/go", method="post")
-									.input-append
-										input#search.span4(name="search",type="text")
-
-										button.btn(name="action", value="search", type="submit") 
-											i.icon-search
-										button.btn(name="action", value="go", type="submit")
-											i.icon-chevron-right
-
-							li.nav-header Page
-
-							li 
-								a(href="raw") Source
-							li 
-								a(href="print") Print
-							li 
-								div.dropdown
-									a(href="#",data-toggle="dropdown").dropdown-toggle Export 
-										b.caret
-									ul.dropdown-menu(role="menu")
-										li: a(href="export/pdf") PDF
-										li: a(href="export/html") HTML
-										li: a(href="export/docx") Word (.docx)
-										li: a(href="export/latex") LaTeX
-										li: a(href="export/markdown") Markdown
-										li: a(href="export/rst") ReStructuredText
-										li.dropdown-submenu
-											a(href="export/slidy") Slideshow
-											ul.dropdown-menu
-												li: a(href="export/slidy") Slidy
-												li: a(href="export/slideous") Slideous
-												li: a(href="export/s5") S5
-												li: a(href="export/dzslides") DZSlides
-										li.dropdown-submenu
-											a(href="#") Other
-											ul.dropdown-menu
-												li: a(href="export/json") JSON
-												li: a(href="export/native") Native										
-
-
-							li 
-								a(href="") Delete
-							li 
-								a(href="") Rename
-
-				div.span10
+				div#content.col-md-9
 					block content
 
 			hr
@@ -107,10 +98,12 @@ html
 				p &copy; 2013
 
 		script(src="/js/jquery.js")
-		script(src="/js/bootstrap.min.js")
+		script(src="/lib/bootstrap/js/bootstrap.min.js")
+		script(src="/js/collapsible.js")
 		script(src="/lib/diff_match_patch/diff_match_patch.js")
 		script(src="/lib/codemirror-3.15/codemirror-compressed.js")
-
-
+		script(src="/lib/jquery-ui-custom/jquery-ui-1.10.3.custom.js")
+		script(src="/lib/jquery.tocify.js/js/jquery.tocify.js")
+		script(src="/js/script.js")
 		
 		block scripts

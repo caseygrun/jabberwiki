@@ -10,17 +10,18 @@ block content
 			strong Edit page text 
 			| Edit the body of the page using Pandoc markdown
 
-		div.well
+		div.panel.panel-default
+			.panel-body
 
-			label(for="text") Page content
-			textarea#text(name="text",rows=12).input-block-level
-				!{content}
+				.form-group
+					label(for="text") Page content
+					textarea#text(name="text",rows=12).form-control
+						!{content}
 
-			label(for="message") Commit message
-			textarea#message(name="message", rows=2).input-block-level
-
-		div.form-actions
-			input(type="submit").btn.btn-primary Save
+			.panel-footer
+				.form-group
+					textarea#message(name="message", rows=2, placeholder="Commit Message").form-control
+				input(type="submit").btn.btn-primary Save
 
 block scripts
 	script(type="text/javascript")

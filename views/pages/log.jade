@@ -11,14 +11,18 @@ block content
 	table.table
 		thead
 			tr
-				th ID
+				th Date
 				th Message
 				th Author
-				th Date
+				th ID
+
 		tbody
 			for rev in revisions
 				tr 
-					td: a(href=wiki.url(page,'view',rev.id))=rev.id
+					td
+						span= moment(rev.time).calendar() 
+						&nbsp;
+						span.text-muted= "("+moment(rev.time).fromNow()+")"
 					td= rev.message
 					td= rev.author.toString()
-					td= rev.time
+					td: a(href=wiki.url(page,'view',rev.id)).btn.btn-info= rev.id.substr(0,7)

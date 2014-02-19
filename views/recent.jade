@@ -1,0 +1,28 @@
+extends ./index
+
+block content
+	.page-header	
+		h1 Recent changes
+
+	p.alert.alert-info 
+		| Recent Changes to
+		strong 
+			if title
+				=title
+			else
+				|  all pages
+
+	table.table
+		thead
+			tr
+				th Page
+				th Message
+				th Author
+				th Date
+		tbody
+			for rev in revisions
+				tr 
+					td: a(href=wiki.url(page,'view',rev.id))=rev.path
+					td= rev.message
+					td= rev.author.toString()
+					td= rev.time

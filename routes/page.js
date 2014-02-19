@@ -126,6 +126,7 @@
         var page, store;
         store = app.get('store');
         page = wiki.filename(req.sanitize(0).trim());
+        console.log(page);
         return async.waterfall([
           function(cb) {
             return store.read(page, function(err, text) {

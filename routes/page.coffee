@@ -86,6 +86,8 @@ module.exports = (app) ->
 			store = app.get('store')
 			page = wiki.filename req.sanitize(0).trim()
 
+			console.log page
+
 			async.waterfall [
 				(cb) -> store.read page,(err,text) -> 
 					# Swallow "file not found" errors
