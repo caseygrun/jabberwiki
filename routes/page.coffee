@@ -260,7 +260,7 @@ module.exports = (app) ->
 			page = wiki.filename req.sanitize(0).trim()
 			text = req.param('text')
 			message = req.param('message')
-			author = new storejs.Author('Name', 'example@example.com') # TODO
+			author = new storejs.Author(req.user.name, req.user.email) # TODO
 
 			store.create(page,text,author,message,(err, resource) ->
 				# TODO: handle error

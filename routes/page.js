@@ -369,7 +369,7 @@
         page = wiki.filename(req.sanitize(0).trim());
         text = req.param('text');
         message = req.param('message');
-        author = new storejs.Author('Name', 'example@example.com');
+        author = new storejs.Author(req.user.name, req.user.email);
         return store.create(page, text, author, message, function(err, resource) {
           return res.redirect(wiki.url(page, 'view'));
         });
