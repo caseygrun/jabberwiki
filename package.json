@@ -17,11 +17,13 @@
     "tmp": "0.0.21",
     "URIjs": "1.11.2",
     "revisionary": "0.0.1",
-    "dockers":"0.0.1",
+    "dockers": "0.0.1",
     "underscore": "~1.5.2",
     "mkdirp": "~0.3.5",
     "connect-flash": "0.1.1",
-    "async": "~0.2.9"
+    "async": "~0.2.9",
+    "mongoose": "~3.8.7",
+    "passport-local-mongoose": "~0.2.6"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
