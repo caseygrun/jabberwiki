@@ -50,8 +50,9 @@ li.hover {
 	cursor: pointer;
 }
 
-li.hover:not(.collapsed) > ul {
+/*li.hover:not(.collapsed) > ul {
 	margin-left: 19px;
 	border-left: solid 1px silver;
 	padding-left: 5px;
 }
+*/

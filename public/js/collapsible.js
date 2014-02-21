@@ -35,7 +35,5 @@ collapsible = function(options) {
 
 	return me;
 
-}({
-	container: "#content"
-});
+}
 
