@@ -1,5 +1,5 @@
 (function() {
-  var URI, config, me, mkdirp, pth, tempDir, tmp, _;
+  var URI, config, dockers, me, mkdirp, pth, tempDir, tmp, _;
 
   pth = require('path');
 
@@ -12,6 +12,8 @@
   tmp = require('tmp');
 
   config = require('../config/config');
+
+  dockers = require('dockers');
 
   tempDir = process.env.TMP || process.env.TMPDIR || process.env.TEMP || '/tmp' || process.cwd();
 
@@ -34,6 +36,12 @@
 
     url: function(page, verb, id) {
       var p;
+      if (verb == null) {
+        verb = 'view';
+      }
+      if (id == null) {
+        id = null;
+      }
       p = pth.join('/pages', me.filename(page), verb);
       if (id) {
         p = pth.join(p, id);
@@ -139,66 +147,26 @@
         parents: parents
       };
     },
-    replaceWikiLinks: function(ast) {
-      var makeUrl, parse, rewriteImageUrl;
-      makeUrl = function(textArray) {
-        var item, pageName;
-        pageName = ((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = textArray.length; _i < _len; _i++) {
-            item = textArray[_i];
-            if (item === "Space") {
-              _results.push(" ");
-            } else if (item.Str) {
-              _results.push(item.Str);
-            } else {
-              _results.push(void 0);
-            }
-          }
-          return _results;
-        })()).join('');
-        return me.url(pageName, 'view');
-      };
+    replaceWikiLinks: function(format) {
+      var rewriteImageUrl, wikiLinks;
       rewriteImageUrl = function(fileName) {
         return me.fileUrl(fileName);
       };
-      /*
-      		* @param {Array} ast Array of pandoc objects
-      */
-
-      parse = function(ast) {
-        var item, key, parsedUri, text, uri, _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = ast.length; _i < _len; _i++) {
-          item = ast[_i];
-          if (item['Link'] != null) {
-            text = item.Link[0];
-            uri = item.Link[1][0];
-            if (!uri) {
-              item.Link[1][0] = makeUrl(text);
-            }
+      wikiLinks = function(key, value, format, meta) {
+        var parsedUri, text, title, url, _ref, _ref1;
+        if (key === 'Link' && value[1][0] === '') {
+          text = value[0], (_ref = value[1], url = _ref[0], title = _ref[1]);
+          url = me.url(dockers.filters.stringify(text));
+          return dockers.filters.elements.Link(value[0], [url, title]);
+        } else if (key === 'Image') {
+          text = value[0], (_ref1 = value[1], url = _ref1[0], title = _ref1[1]);
+          parsedUri = URI(url);
+          if (!parsedUri.protocol()) {
+            return dockers.filters.elements.Image(text, [rewriteImageUrl(url), title]);
           }
-          if (item['Image'] != null) {
-            uri = item.Image[1][0];
-            parsedUri = URI(uri);
-            if (!parsedUri.protocol()) {
-              item.Image[1][0] = rewriteImageUrl(uri);
-            }
-          } else if (_.isArray(item)) {
-            item = parse(item);
-          } else if (_.isObject(item)) {
-            for (key in item) {
-              if (_.isArray(item[key])) {
-                item[key] = parse(item[key]);
-              }
-            }
-          }
-          _results.push(item);
         }
-        return _results;
       };
-      return parse(ast);
+      return dockers.filters.toJSONPipe(wikiLinks, format);
     },
     /**
     	 * Gets the path to a directory for writing temporary files

@@ -40,6 +40,14 @@ module.exports = (app) ->
 				if err then return next(err)
 				res.send(matches)
 
+		preview: (req, res, next) ->
+			text = req.param('text')
+			format = req.param('format')
+
+			markup.html text, {from: format}, (err, html) ->
+				if err? then return next(err)
+				res.send(html)
+
 		recent: (req, res, next) ->
 			store = app.get('store')
 

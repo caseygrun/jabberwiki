@@ -183,8 +183,10 @@ module.exports = me =
 		options = _.extend( { to: 'html5', '--base-header-level':'2','--mathjax':true,'--smart':true}, options ) #['--table-of-contents','--base-header-level=2','--mathjax','--smart']
 		
 		# TODO: Include a template so Pandoc will render the TOC
+		# me.pipeline(text, options, 
+		# 	[ ( (tree, cb) -> cb(null,wiki.replaceWikiLinks(tree)) ) ], callback)
 		me.pipeline(text, options, 
-			[ ( (tree, cb) -> cb(null,wiki.replaceWikiLinks(tree)) ) ], callback)
+			[ wiki.replaceWikiLinks('html') ], callback)
 
 		
 	

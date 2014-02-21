@@ -56,6 +56,19 @@
           return res.send(matches);
         });
       },
+      preview: function(req, res, next) {
+        var format, text;
+        text = req.param('text');
+        format = req.param('format');
+        return markup.html(text, {
+          from: format
+        }, function(err, html) {
+          if (err != null) {
+            return next(err);
+          }
+          return res.send(html);
+        });
+      },
       recent: function(req, res, next) {
         var store;
         store = app.get('store');

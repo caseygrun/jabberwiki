@@ -61,11 +61,7 @@
         '--mathjax': true,
         '--smart': true
       }, options);
-      return me.pipeline(text, options, [
-        (function(tree, cb) {
-          return cb(null, wiki.replaceWikiLinks(tree));
-        })
-      ], callback);
+      return me.pipeline(text, options, [wiki.replaceWikiLinks('html')], callback);
     }
   };
 

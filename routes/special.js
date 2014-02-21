@@ -90,7 +90,7 @@
           });
         } else {
           console.log(req.files);
-          return next(new Error());
+          return next(new Error('No file uploaded, or file uploaded unsuccessfully.'));
         }
       }
     };

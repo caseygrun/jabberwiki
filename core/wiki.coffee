@@ -4,6 +4,7 @@ mkdirp = require('mkdirp')
 URI = require('URIjs')
 tmp = require('tmp')
 config = require('../config/config')
+dockers = require('dockers')
 
 
 tempDir = process.env.TMP || process.env.TMPDIR || process.env.TEMP || '/tmp' || process.cwd();
@@ -24,7 +25,7 @@ module.exports = me =
 	 * @param  {String} id Revision ID
 	 * @return {String} url
 	###
-	url: (page,verb,id) ->
+	url: (page,verb='view',id=null) ->
 		p = pth.join('/pages',me.filename(page),verb)
 		if id then p = pth.join(p,id)
 
@@ -131,43 +132,59 @@ module.exports = me =
 			parents: parents
 		}
 
-	replaceWikiLinks: (ast) ->
-		makeUrl = (textArray) ->
-			pageName = (for item in textArray
-				if item == "Space" then " " else if item.Str then item.Str).join('');
-			me.url(pageName,'view')
-
+	replaceWikiLinks: (format) ->
 		rewriteImageUrl = (fileName) ->
 			me.fileUrl(fileName)
 
+		wikiLinks = (key, value, format, meta) ->
+			if key == 'Link' && value[1][0] == ''
+				[text, [url, title]] = value
+				url = me.url(dockers.filters.stringify(text))
+				return dockers.filters.elements.Link(value[0],[url,title])
+			else if key == 'Image'
+				[text, [url, title]] = value
+				parsedUri = URI(url)
+				if !parsedUri.protocol() then dockers.filters.elements.Image(text, [rewriteImageUrl(url), title])
 
-		###
-		* @param {Array} ast Array of pandoc objects
-		###
-		parse = (ast) -> 
+		return dockers.filters.toJSONPipe(wikiLinks, format)
 
-			for item in ast
+	# replaceWikiLinks: (ast) ->
+	# 	makeUrl = (textArray) ->
+	# 		pageName = (for item in textArray
+	# 			if item == "Space" then " " else if item.Str then item.Str).join('');
+	# 		me.url(pageName,'view')
 
-				if item['Link']? 
-					text = item.Link[0] 
-					uri = item.Link[1][0]
-					if not uri then item.Link[1][0] = makeUrl(text)
-				if item['Image']?
-					uri = item.Image[1][0]
-					parsedUri = URI(uri)
-					if !parsedUri.protocol() then item.Image[1][0] = rewriteImageUrl(uri)
+	# 	rewriteImageUrl = (fileName) ->
+	# 		me.fileUrl(fileName)
 
 
-				else if _.isArray(item) 
-					item = parse item
+	# 	###
+	# 	* @param {Array} ast Array of pandoc objects
+	# 	###
+	# 	parse = (ast) -> 
 
-				else if _.isObject(item) 
-					for key of item
-						if _.isArray(item[key]) then item[key] = parse(item[key])
+	# 		for item in ast
 
-				item
+	# 			if item['Link']? 
+	# 				text = item.Link[0] 
+	# 				uri = item.Link[1][0]
+	# 				if not uri then item.Link[1][0] = makeUrl(text)
+	# 			if item['Image']?
+	# 				uri = item.Image[1][0]
+	# 				parsedUri = URI(uri)
+	# 				if !parsedUri.protocol() then item.Image[1][0] = rewriteImageUrl(uri)
 
-		parse ast
+
+	# 			else if _.isArray(item) 
+	# 				item = parse item
+
+	# 			else if _.isObject(item) 
+	# 				for key of item
+	# 					if _.isArray(item[key]) then item[key] = parse(item[key])
+
+	# 			item
+
+	# 	parse ast
 
 
 	###*

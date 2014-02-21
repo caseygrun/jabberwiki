@@ -63,7 +63,7 @@ module.exports = (app) ->
 						res.send('ok')
 			else
 				console.log req.files
-				next new Error()
+				next new Error('No file uploaded, or file uploaded unsuccessfully.')
 
 
 
