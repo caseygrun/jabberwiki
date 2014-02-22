@@ -1,5 +1,6 @@
 wiki = require('wiki')
-
+Minimatch = require('minimatch').Minimatch
+_ = require('underscore')
 
 ###*
  * @class Tool
@@ -27,14 +28,31 @@ wiki = require('wiki')
  * @property {String} filter 
  * Minimatch-compatible pattern describing to which pages this view applies 
  *
- * @property {String} [propName] [description]
-###
+ * @property {Function} action 
+ * Function that generates the view. 
+ *
+ * @property {String} action.text 
+ * @property {Object} action.metadata
+ * @property {Request} action.req 
+ * @property {Response} action.res
+ * @property {Function} action.next ###
 
 ###*
  * @class  Editor
  * Represents an editor for a particular type of page
+ * 
  * @property {String} filter 
  * Minimatch-compatible pattern describing to which pages this editor applies 
+ *
+ * @property {Function} action 
+ * Function that generates the editor. 
+ *
+ * @property {String} action.text 
+ * @property {Object} action.metadata
+ * @property {Request} action.req 
+ * @property {Response} action.res
+ * @property {Function} action.next  
+ * 
 ###
 
 module.exports = do () ->
@@ -48,6 +66,7 @@ module.exports = do () ->
 		options = options || {}
 		options.tools = options.tools || []
 		options.views = options.views || []
+		options.editors = options.editors || []
 		middleware = options.middleware || []
 
 		# build tools
@@ -66,11 +85,26 @@ module.exports = do () ->
 
 		# build views
 		views = for view in options.views
+			view.filter = new Minimatch(view.filter, {matchBase: true})
 			view
+
+		# build editors
+		editors = for editor in options.editors
+			editor.filter = new Minimatch(editor.filter, {matchBase: true})
+			editor
+
+	getView = (page) ->
+		_.find views, (view) -> view.filter.match(page)
+
+	getEditor = (page) ->
+		_.find editors, (editor) -> editor.filter.match(page)
+
 
 	return {
 		tools: tools
-		views : views
+		views: views
 		editors: editors
 		init: init
+		getView: getView
+		getEditor: getEditor
 	}

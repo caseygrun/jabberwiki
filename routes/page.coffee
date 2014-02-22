@@ -7,7 +7,8 @@ storejs = require('revisionary')
  * Determines the type of resource at `page`, retrieves its contents, and passes to the appropriate `callback`. 
  * If a file, retrieves its contents. If a folder, retrieves a list of contained resources. 
  * @param {String} page Path to the page
- * @param {String} [version=null] Version of the page to retrieve, or null to retrieve the latest version
+ * @param {Object} [options={}] Options
+ * @param {String} [options.id=null] Version of the page to retrieve, or null to retrieve the latest version
  * @param {Object} callbacks Hash describing several possible callbacks:
  * 
  * @param {Function} callbacks.file Callback to be executed if the resource is a file
@@ -26,7 +27,7 @@ storejs = require('revisionary')
  * @param {String} callbacks.default.type Type returned by the store
  * @param {Mixed} callbacks.default.results Results if any
 ###
-retrieve = (page, version, store, callbacks) ->
+retrieve = (page, options={}, store, callbacks) ->
 	callbacks.default ?= () -> 
 	callbacks.file ?= callbacks.default
 	callbacks.folder ?= callbacks.default
@@ -35,13 +36,31 @@ retrieve = (page, version, store, callbacks) ->
 	store.type page, null, (err, type) ->
 		if err then callbacks.error(err)
 		else switch type 
-			when "file" then store.read page, version, callbacks.file
+			when "file" then store.read page, options, callbacks.file
 			when "folder" then store.list page, callbacks.folder
 			else callbacks.default err, type, null
 
 
 module.exports = (app) ->
 	return me = 
+		views:
+			image: (text, metadata, req, res, next) -> 
+				res.render('pages/image.jade', { metadata: metadata })
+
+			default: (text, metadata, req, res, next) ->
+				format = metadata.ext
+				format = if format == 'md' then 'markdown' else format
+				markup.html text,{from: format}, (err, html) -> 
+					if err? then return next(err)
+					if (html? and metadata?) and (not err?) 
+						res.render('pages/view.jade',{
+							content: html, 
+							metadata: metadata })
+		editors:
+			default: (text, metadata, req, res, next) ->
+				res.render('pages/editor.jade',{
+					content: text, 
+					metadata: metadata  })
 
 		###*
 		 * Route to view a page as HTML
@@ -53,26 +72,40 @@ module.exports = (app) ->
 			page = wiki.filename req.sanitize(0).trim()
 			version = req.sanitize(1).trim() || null
 
-			retrieve page, version, store, {
+			retrieve page, {id: version}, store, {
 				'folder': (err, contents) -> return me.list(req,res,next)
 				'file': (err,text) ->
-					async.waterfall [
-						(cb) -> wiki.preprocess(page,text,cb)
-						(text,metadata,cb) ->
-							format = 'markdown'
-							markup.html(text,{from: format},(err, html) -> cb(err,html,metadata))
+					if err? then return next(err)
 
-					], (err, html, metadata) -> 
+					if not text then return res.redirect(wiki.url(page,'edit'))
+
+					wiki.preprocess page,text, (err, text, metadata) ->
 						if err? then return next(err)
+						metadata.version = version
 
-						if (html? and metadata?) and (not err?) 
-							res.render('pages/view.jade',{
-								content: html, 
-								title: metadata.title, 
-								parents: metadata.parents, 
-								version: version })
+						view = app.pages.getView(page)
+						if not view?.action? then return next(new Error('No view found for this page type!'))
 						else
-							res.redirect(wiki.url(page,'edit'))
+							return view.action(text, metadata, req, res, next)
+
+					# async.waterfall [
+					# 	(cb) -> wiki.preprocess(page,text,cb)
+					# 	(text,metadata,cb) ->
+					# 		format = 'markdown'
+					# 		markup.html(text,{from: format},(err, html) -> cb(err,html,metadata))
+
+					# ], (err, html, metadata) -> 
+					# 	if err? then return next(err)
+
+					# 	if (html? and metadata?) and (not err?) 
+					# 		res.render('pages/view.jade',{
+					# 			content: html, 
+					# 			title: metadata.title, 
+					# 			parents: metadata.parents, 
+					# 			version: version })
+					# 	else
+					# 		res.redirect(wiki.url(page,'edit'))
+					
 				'error': (err) -> next(err)
 				'default': () -> res.redirect(wiki.url(page,'edit'))
 			}
@@ -86,10 +119,8 @@ module.exports = (app) ->
 			store = app.get('store')
 			page = wiki.filename req.sanitize(0).trim()
 
-			console.log page
-
 			async.waterfall [
-				(cb) -> store.read page,(err,text) -> 
+				(cb) -> store.read page,null,(err,text) -> 
 					# Swallow "file not found" errors
 					if err?.code=='ENOENT' or err?.code==128
 						cb(null,'')
@@ -101,10 +132,11 @@ module.exports = (app) ->
 				# TODO: handle error
 				if err then return next(err)
 
-				res.render('pages/editor.jade',{
-					content: text, 
-					title: metadata.title, 
-					parents: metadata.parents,  })
+				editor = app.pages.getEditor(page)
+
+				if not editor?.action? then return next(new Error('No editor found for this page type!')) 
+				else
+					return editor.action(text, metadata, req, res, next)
 
 		list: (req,res,next) ->
 			store = app.get('store')
@@ -156,8 +188,8 @@ module.exports = (app) ->
 			metadata = wiki.parsePath(page)
 
 			async.parallel [
-				(cb) -> store.read(page, v1, cb), 
-				(cb) -> store.read(page, v2, cb)
+				(cb) -> store.read(page, {id: v1}, cb), 
+				(cb) -> store.read(page, {id: v1}, cb)
 			], (err, pages) -> 
 				if err then return next(err)
 				res.render('pages/diff.jade',{
@@ -243,9 +275,12 @@ module.exports = (app) ->
 		raw: (req, res) ->
 			store = app.get('store')
 			page = wiki.filename req.sanitize(0).trim()
+			ext = wiki.extname page
 
-			retrieve page, null, store, {
-				file: (err, text) -> res.send(text)
+			retrieve page, { encoding: 'buffer', maxBuffer: 10*1000*1024 }, store, {
+				file: (err, text) ->
+					res.type(ext)
+					res.send(text)
 				folder: (err, contents) -> res.send (resource.path for resource in contents).join('\n')
 			}
 
@@ -274,7 +309,12 @@ module.exports = (app) ->
 		 * @param  {Response} res Outgoing HTTP response
 		###
 		remove: (req,res,next) ->
+			store = app.get('store')
 
+			page = wiki.filename req.sanitize(0).trim()
+			store.remove page, (err) ->
+				if err then return next(err)
+				res.redirect(wiki.mainPage())
 			
 		move: (req,res,next) ->
 

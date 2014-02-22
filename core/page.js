@@ -1,7 +1,11 @@
 (function() {
-  var wiki;
+  var Minimatch, wiki, _;
 
   wiki = require('wiki');
+
+  Minimatch = require('minimatch').Minimatch;
+
+  _ = require('underscore');
 
   /**
    * @class Tool
@@ -29,28 +33,47 @@
    * @property {String} filter 
    * Minimatch-compatible pattern describing to which pages this view applies 
    *
-   * @property {String} [propName] [description]
+   * @property {Function} action 
+   * Function that generates the view. 
+   *
+   * @property {String} action.text 
+   * @property {Object} action.metadata
+   * @property {Request} action.req 
+   * @property {Response} action.res
+   * @property {Function} action.next
   */
 
 
   /**
    * @class  Editor
    * Represents an editor for a particular type of page
+   * 
    * @property {String} filter 
-   * Minimatch-compatible pattern describing to which pages this editor applies
+   * Minimatch-compatible pattern describing to which pages this editor applies 
+   *
+   * @property {Function} action 
+   * Function that generates the editor. 
+   *
+   * @property {String} action.text 
+   * @property {Object} action.metadata
+   * @property {Request} action.req 
+   * @property {Response} action.res
+   * @property {Function} action.next  
+   *
   */
 
 
   module.exports = (function() {
-    var editors, init, tools, views;
+    var editors, getEditor, getView, init, tools, views;
     tools = [];
     views = [];
     editors = [];
     init = function(app, options) {
-      var middleware, route, tool, view;
+      var editor, middleware, route, tool, view;
       options = options || {};
       options.tools = options.tools || [];
       options.views = options.views || [];
+      options.editors = options.editors || [];
       middleware = options.middleware || [];
       tools = (function() {
         var _i, _len, _ref, _results;
@@ -73,22 +96,50 @@
         }
         return _results;
       })();
-      return views = (function() {
+      views = (function() {
         var _i, _len, _ref, _results;
         _ref = options.views;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           view = _ref[_i];
+          view.filter = new Minimatch(view.filter, {
+            matchBase: true
+          });
           _results.push(view);
         }
         return _results;
       })();
+      return editors = (function() {
+        var _i, _len, _ref, _results;
+        _ref = options.editors;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          editor = _ref[_i];
+          editor.filter = new Minimatch(editor.filter, {
+            matchBase: true
+          });
+          _results.push(editor);
+        }
+        return _results;
+      })();
+    };
+    getView = function(page) {
+      return _.find(views, function(view) {
+        return view.filter.match(page);
+      });
+    };
+    getEditor = function(page) {
+      return _.find(editors, function(editor) {
+        return editor.filter.match(page);
+      });
     };
     return {
       tools: tools,
       views: views,
       editors: editors,
-      init: init
+      init: init,
+      getView: getView,
+      getEditor: getEditor
     };
   })();
 

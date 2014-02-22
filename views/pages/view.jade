@@ -1,6 +1,9 @@
 extends ../index
 include mixins.jade
 
+block title
+	=metadata.title
+
 block content
 	div.container-fluid(style="padding: 0px")
 		div.row-fluid
@@ -11,12 +14,12 @@ block content
 			div#content.col-md-10
 
 				mixin tabs('view')
-				mixin header(title,parents)
+				mixin header(metadata.title, metadata.parents)
 
-				if version
+				if metadata.version
 					div.alert.alert-info
 						| Viewing version 
-						a(href="#")= version
+						a(href="#")= metadata.version
 						|  of this page
 
 				!{content}

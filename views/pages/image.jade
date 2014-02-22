@@ -1,0 +1,14 @@
+extends ../index
+include mixins.jade
+
+block content
+	mixin tabs('view')
+	mixin header(metadata.title,metadata.parents)
+
+	if metadata.version
+		div.alert.alert-info
+			| Viewing version 
+			a(href="#")= metadata.version
+			|  of this page
+
+	img(src=wiki.fileUrl(metadata.page))

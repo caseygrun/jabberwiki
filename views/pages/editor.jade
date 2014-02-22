@@ -1,9 +1,12 @@
 extends ../index
 include mixins.jade
 
+block title
+	| Edit: #{metadata.title}
+
 block content
 	mixin tabs('edit')
-	mixin header(title,parents)
+	mixin header(metadata.title,metadata.parents)
 
 	form(action="edit", method="post")
 		p.alert.alert-info 

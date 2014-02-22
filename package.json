@@ -23,7 +23,8 @@
     "connect-flash": "0.1.1",
     "async": "~0.2.9",
     "mongoose": "~3.8.7",
-    "passport-local-mongoose": "~0.2.6"
+    "passport-local-mongoose": "~0.2.6",
+    "minimatch": "~0.2.14"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

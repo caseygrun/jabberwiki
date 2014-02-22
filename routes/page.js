@@ -13,7 +13,8 @@
    * Determines the type of resource at `page`, retrieves its contents, and passes to the appropriate `callback`. 
    * If a file, retrieves its contents. If a folder, retrieves a list of contained resources. 
    * @param {String} page Path to the page
-   * @param {String} [version=null] Version of the page to retrieve, or null to retrieve the latest version
+   * @param {Object} [options={}] Options
+   * @param {String} [options.id=null] Version of the page to retrieve, or null to retrieve the latest version
    * @param {Object} callbacks Hash describing several possible callbacks:
    * 
    * @param {Function} callbacks.file Callback to be executed if the resource is a file
@@ -34,7 +35,10 @@
   */
 
 
-  retrieve = function(page, version, store, callbacks) {
+  retrieve = function(page, options, store, callbacks) {
+    if (options == null) {
+      options = {};
+    }
     if (callbacks["default"] == null) {
       callbacks["default"] = function() {};
     }
@@ -53,7 +57,7 @@
       } else {
         switch (type) {
           case "file":
-            return store.read(page, version, callbacks.file);
+            return store.read(page, options, callbacks.file);
           case "folder":
             return store.list(page, callbacks.folder);
           default:
@@ -66,6 +70,39 @@
   module.exports = function(app) {
     var me;
     return me = {
+      views: {
+        image: function(text, metadata, req, res, next) {
+          return res.render('pages/image.jade', {
+            metadata: metadata
+          });
+        },
+        "default": function(text, metadata, req, res, next) {
+          var format;
+          format = metadata.ext;
+          format = format === 'md' ? 'markdown' : format;
+          return markup.html(text, {
+            from: format
+          }, function(err, html) {
+            if (err != null) {
+              return next(err);
+            }
+            if (((html != null) && (metadata != null)) && (err == null)) {
+              return res.render('pages/view.jade', {
+                content: html,
+                metadata: metadata
+              });
+            }
+          });
+        }
+      },
+      editors: {
+        "default": function(text, metadata, req, res, next) {
+          return res.render('pages/editor.jade', {
+            content: text,
+            metadata: metadata
+          });
+        }
+      },
       /**
       		 * Route to view a page as HTML
       		 * @param  {Request} req Incoming HTTP request
@@ -77,36 +114,30 @@
         store = app.get('store');
         page = wiki.filename(req.sanitize(0).trim());
         version = req.sanitize(1).trim() || null;
-        return retrieve(page, version, store, {
+        return retrieve(page, {
+          id: version
+        }, store, {
           'folder': function(err, contents) {
             return me.list(req, res, next);
           },
           'file': function(err, text) {
-            return async.waterfall([
-              function(cb) {
-                return wiki.preprocess(page, text, cb);
-              }, function(text, metadata, cb) {
-                var format;
-                format = 'markdown';
-                return markup.html(text, {
-                  from: format
-                }, function(err, html) {
-                  return cb(err, html, metadata);
-                });
-              }
-            ], function(err, html, metadata) {
+            if (err != null) {
+              return next(err);
+            }
+            if (!text) {
+              return res.redirect(wiki.url(page, 'edit'));
+            }
+            return wiki.preprocess(page, text, function(err, text, metadata) {
+              var view;
               if (err != null) {
                 return next(err);
               }
-              if (((html != null) && (metadata != null)) && (err == null)) {
-                return res.render('pages/view.jade', {
-                  content: html,
-                  title: metadata.title,
-                  parents: metadata.parents,
-                  version: version
-                });
+              metadata.version = version;
+              view = app.pages.getView(page);
+              if ((view != null ? view.action : void 0) == null) {
+                return next(new Error('No view found for this page type!'));
               } else {
-                return res.redirect(wiki.url(page, 'edit'));
+                return view.action(text, metadata, req, res, next);
               }
             });
           },
@@ -128,10 +159,9 @@
         var page, store;
         store = app.get('store');
         page = wiki.filename(req.sanitize(0).trim());
-        console.log(page);
         return async.waterfall([
           function(cb) {
-            return store.read(page, function(err, text) {
+            return store.read(page, null, function(err, text) {
               if ((err != null ? err.code : void 0) === 'ENOENT' || (err != null ? err.code : void 0) === 128) {
                 return cb(null, '');
               } else {
@@ -144,14 +174,16 @@
             });
           }
         ], function(err, text, metadata) {
+          var editor;
           if (err) {
             return next(err);
           }
-          return res.render('pages/editor.jade', {
-            content: text,
-            title: metadata.title,
-            parents: metadata.parents
-          });
+          editor = app.pages.getEditor(page);
+          if ((editor != null ? editor.action : void 0) == null) {
+            return next(new Error('No editor found for this page type!'));
+          } else {
+            return editor.action(text, metadata, req, res, next);
+          }
         });
       },
       list: function(req, res, next) {
@@ -210,9 +242,13 @@
         metadata = wiki.parsePath(page);
         return async.parallel([
           function(cb) {
-            return store.read(page, v1, cb);
+            return store.read(page, {
+              id: v1
+            }, cb);
           }, function(cb) {
-            return store.read(page, v2, cb);
+            return store.read(page, {
+              id: v1
+            }, cb);
           }
         ], function(err, pages) {
           if (err) {
@@ -348,11 +384,16 @@
       */
 
       raw: function(req, res) {
-        var page, store;
+        var ext, page, store;
         store = app.get('store');
         page = wiki.filename(req.sanitize(0).trim());
-        return retrieve(page, null, store, {
+        ext = wiki.extname(page);
+        return retrieve(page, {
+          encoding: 'buffer',
+          maxBuffer: 10 * 1000 * 1024
+        }, store, {
           file: function(err, text) {
+            res.type(ext);
             return res.send(text);
           },
           folder: function(err, contents) {
@@ -392,7 +433,17 @@
       		 * @param  {Response} res Outgoing HTTP response
       */
 
-      remove: function(req, res, next) {},
+      remove: function(req, res, next) {
+        var page, store;
+        store = app.get('store');
+        page = wiki.filename(req.sanitize(0).trim());
+        return store.remove(page, function(err) {
+          if (err) {
+            return next(err);
+          }
+          return res.redirect(wiki.mainPage());
+        });
+      },
       move: function(req, res, next) {},
       discuss: {
         view: function(req, res, next) {},
