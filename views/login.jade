@@ -1,19 +1,22 @@
 extends layout.jade
 
+
+block title
+	| Login
+
 block content
 
-	h1 Login
-
-	.container
+	.container-fluid
 		.row
-			.col-md-6
-				form(action="/login",method="post").form-horizontal
+			.col-md-4
+				h1 Login
+				form(action="/login",method="post",autocomplete="on").form-horizontal
 					.panel.panel-default
 						.panel-body
 							.form-group
 								label.col-sm-2.control-label Email
 								.col-sm-10
-									input(type="email",name="email").form-control
+									input(type="email",name="email", autofocus).form-control
 							.form-group
 								label.col-sm-2.control-label Password
 								.col-sm-10
