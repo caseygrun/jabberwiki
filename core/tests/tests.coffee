@@ -19,9 +19,15 @@ q.test 'tempFile', ->
 		q.ok(filename,'Temporary filename is generated')
 		q.start()
 
+q.test 'url', ->
+	q.equal wiki.url('testPage'), '/pages/testPage.md/view', 'Simple File'
+	q.equal wiki.url('testPage/'), '/pages/testPage//view', 'Simple Folder'
+	q.equal wiki.url('/testPage/'), '/pages/testPage//view', 'Simple Folder'
+
 q.test 'filename', ->
 	q.equal wiki.filename('test'), 'test.md', 'Simple file'
 	q.equal wiki.filename('test/'), 'test/', 'Simple folder'
+	q.equal wiki.filename('/test/'), 'test/', 'Simple folder'
 	q.equal wiki.filename('testDir/testFile'), 'testDir/testFile.md', 'File in folder'
 
 q.test 'routeToRegExp', ->

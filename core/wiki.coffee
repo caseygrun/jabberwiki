@@ -26,7 +26,7 @@ module.exports = me =
 	 * @return {String} url
 	###
 	url: (page,verb='view',id=null) ->
-		p = pth.join('/pages',me.filename(page),verb)
+		p = ['/pages',me.filename(page),verb].join('/')
 		if id then p = pth.join(p,id)
 
 		encodeURI(p)
@@ -47,6 +47,8 @@ module.exports = me =
 	 * @return {String} filename
 	###
 	filename: (page) ->
+		page = if page[0] == '/' then page.substr(1) else page
+
 		if _.last(page) == '/' then page
 		else 
 			basename = pth.basename page
@@ -129,8 +131,13 @@ module.exports = me =
 		return {
 			title: title,
 			ext: ext,
-			parents: parents
+			parents: parents,
+			page: page
 		}
+
+	extname: (page) ->
+		data = me.parsePath(page)
+		data.ext
 
 	replaceWikiLinks: (format) ->
 		rewriteImageUrl = (fileName) ->

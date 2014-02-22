@@ -21,9 +21,16 @@
     });
   });
 
+  q.test('url', function() {
+    q.equal(wiki.url('testPage'), '/pages/testPage.md/view', 'Simple File');
+    q.equal(wiki.url('testPage/'), '/pages/testPage//view', 'Simple Folder');
+    return q.equal(wiki.url('/testPage/'), '/pages/testPage//view', 'Simple Folder');
+  });
+
   q.test('filename', function() {
     q.equal(wiki.filename('test'), 'test.md', 'Simple file');
     q.equal(wiki.filename('test/'), 'test/', 'Simple folder');
+    q.equal(wiki.filename('/test/'), 'test/', 'Simple folder');
     return q.equal(wiki.filename('testDir/testFile'), 'testDir/testFile.md', 'File in folder');
   });
 

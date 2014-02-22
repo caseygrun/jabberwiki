@@ -42,7 +42,7 @@
       if (id == null) {
         id = null;
       }
-      p = pth.join('/pages', me.filename(page), verb);
+      p = ['/pages', me.filename(page), verb].join('/');
       if (id) {
         p = pth.join(p, id);
       }
@@ -68,6 +68,7 @@
 
     filename: function(page) {
       var basename;
+      page = page[0] === '/' ? page.substr(1) : page;
       if (_.last(page) === '/') {
         return page;
       } else {
@@ -144,8 +145,14 @@
       return {
         title: title,
         ext: ext,
-        parents: parents
+        parents: parents,
+        page: page
       };
+    },
+    extname: function(page) {
+      var data;
+      data = me.parsePath(page);
+      return data.ext;
     },
     replaceWikiLinks: function(format) {
       var rewriteImageUrl, wikiLinks;
