@@ -1,8 +1,9 @@
 doctype 5
 html
 	head
-		title= title
-		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		title
+			block title
+		meta(name="viewport", content="width=device-width, initial-scale=1")
 		meta(charset="utf-8") 
 		link(rel='stylesheet', href='/css/styles.css')
 		link(rel='stylesheet', href='/css/collapsible.css')
@@ -77,7 +78,6 @@ html
 					ul.nav.navbar-nav.navbar-right
 						li: p.navbar-text
 							if user 
-								| Logged in as: 
 								a(href="#") #{user.email}
 							else 
 								a(href="/login") Login
@@ -87,10 +87,18 @@ html
 			div.row-fluid
 				div.col-md-12
 					block content
-
-			hr
-			footer 
-				p &copy; 2013
+			div.row-fluid
+				div.col-md-12
+					hr
+					footer 
+						ul.list-inline
+							li: a(href=wiki.mainPage()) Main Page
+							li: a(href="/categories") Categories 
+							li: a(href="/all") Index 
+							li: a(href="/recent") Recent 
+							li: a(href="/upload") Upload 
+							li: a(href="/help") Help 
+							li &copy; 2014
 
 		script(src="/js/jquery.js")
 		script(src="/js/underscore-min.js")
