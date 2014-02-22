@@ -60,7 +60,7 @@ module.exports = (app) ->
 					
 					store.create file.name, data, author, message, (err, resource) ->
 						if err then return next(err)
-						res.send('ok')
+						res.redirect(wiki.url(file.name))
 			else
 				console.log req.files
 				next new Error('No file uploaded, or file uploaded unsuccessfully.')

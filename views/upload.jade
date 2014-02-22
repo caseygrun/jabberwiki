@@ -1,15 +1,25 @@
 extends layout
 
+
+block title
+	| Upload
+
 block content
 
-	form(action="/upload",enctype="multipart/form-data",method="post").form-horizontal
+	h1 Upload
 
-		label(for="upload") File:
-		input(type="file",name="upload",multiple="multiple")
+	form(action="/upload",enctype="multipart/form-data",method="post").form
+		div.panel.panel-default
+			div.panel-body	
+
+				div.form-group
+					label(for="upload").control-label File:
+					input(type="file",name="upload",multiple="multiple").form-control
+				
+				div.form-group			
+					label(for="title").control-label File name (optional):
+					input(type="text",name="title").form-control
+			
 		
-		label(for="title") File name (optional):
-		input(type="text",name="title")
-		
-	
-		div.form-actions
+			div.panel-footer
 				input(type="submit",value="Upload").btn.btn-primary

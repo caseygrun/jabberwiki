@@ -85,7 +85,7 @@
               if (err) {
                 return next(err);
               }
-              return res.send('ok');
+              return res.redirect(wiki.url(file.name));
             });
           });
         } else {
