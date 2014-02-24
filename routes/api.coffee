@@ -60,18 +60,16 @@ module.exports = (app) ->
 			if req.files?.upload?.path? 
 				file = req.files.upload
 				store = app.get('store')
-				author = new storejs.Author('Name', 'example@example.com') # TODO
+				author = new storejs.Author(req.user.name, req.user.email)
 				message = "Uploaded file: #{file.name}"
 
 				fs.readFile file.path,(err, data) ->
-					if err then return next(err)
+					if err then return res.send({ error: 'Could not read uploaded file.' })
 					
 					store.create file.name, data, author, message, (err, resource) ->
-						if err then return next(err)
-						res.send('ok')
+						res.send({ error: err, filename: resource?.path })
 			else
-				console.log req.files
-				next new Error()
+				res.send({ error: 'No upload found.' })
 
 
 

@@ -84,22 +84,25 @@
         if (((_ref = req.files) != null ? (_ref1 = _ref.upload) != null ? _ref1.path : void 0 : void 0) != null) {
           file = req.files.upload;
           store = app.get('store');
-          author = new storejs.Author('Name', 'example@example.com');
+          author = new storejs.Author(req.user.name, req.user.email);
           message = "Uploaded file: " + file.name;
           return fs.readFile(file.path, function(err, data) {
             if (err) {
-              return next(err);
+              return res.send({
+                error: 'Could not read uploaded file.'
+              });
             }
             return store.create(file.name, data, author, message, function(err, resource) {
-              if (err) {
-                return next(err);
-              }
-              return res.send('ok');
+              return res.send({
+                error: err,
+                filename: resource != null ? resource.path : void 0
+              });
             });
           });
         } else {
-          console.log(req.files);
-          return next(new Error());
+          return res.send({
+            error: 'No upload found.'
+          });
         }
       }
     };
