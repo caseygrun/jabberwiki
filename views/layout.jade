@@ -8,9 +8,11 @@ html
 		link(rel='stylesheet', href='/css/styles.css')
 		link(rel='stylesheet', href='/css/collapsible.css')
 		link(rel="stylesheet", href="/lib/bootstrap/css/bootstrap.min.css", media="screen")
-		link(rel="stylesheet", href="/lib/codemirror-3.15/lib/codemirror.css")
-		link(rel="stylesheet", href="/lib/codemirror-3.15/addon/merge/merge.css")
+		link(rel="stylesheet", href="/lib/codemirror/lib/codemirror.css")
+		link(rel="stylesheet", href="/lib/codemirror/addon/merge/merge.css")
 		link(rel="stylesheet", href="/lib/jquery.tocify.js/css/jquery.tocify.css")
+		link(rel="stylesheet", href="/lib/font-awesome/css/font-awesome.css")
+			
 		script(src="/lib/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
 	body
 		div.navbar.navbar-inverse.navbar-fixed-top 
@@ -33,12 +35,16 @@ html
 						li: a(href="/help"): i.glyphicon.glyphicon-question-sign 
 
 					ul.nav.navbar-nav
+						li: p.navbar-text | 
+
+					ul.nav.navbar-nav
 						li 
-							a(href="raw") Source
+							a(href="raw"): i.fa.fa-code
 						li 
-							a(href="print") Print
+							a(href="print"): i.fa.fa-print
 						li.dropdown
-							a(href="#",data-toggle="dropdown").btn.dropdown-toggle Export 
+							a(href="#",data-toggle="dropdown").btn.dropdown-toggle 
+								i.fa.fa-share 
 								b.caret
 							ul.dropdown-menu(role="menu")
 								li: a(href="export/pdf") PDF
@@ -61,9 +67,9 @@ html
 										li: a(href="export/native") Native										
 
 						li 
-							a(href="") Delete
+							a(href=""): i.fa.fa-times
 						li 
-							a(href="") Rename
+							a(href=""): i.fa.fa-ellipsis-h
 
 					form.navbar-form.navbar-right(role="search", action="/go", method="post")
 						.form-group
@@ -105,7 +111,10 @@ html
 		script(src="/lib/bootstrap/js/bootstrap.min.js")
 		script(src="/js/collapsible.js")
 		script(src="/lib/diff_match_patch/diff_match_patch.js")
-		script(src="/lib/codemirror-3.15/codemirror-compressed.js")
+		script(src="/lib/codemirror/codemirror-compressed.js")
+		script(src="/js/codemirror-ext.js")
+		script(src="/lib/InlineAttachment/src/inline-attach.js")
+		script(src="/lib/InlineAttachment/src/codemirror.inline-attach.js")
 		script(src="/lib/jquery-ui-custom/jquery-ui-1.10.3.custom.js")
 		script(src="/lib/jquery.tocify.js/js/jquery.tocify.js")
 		//- script(src="/lib/typeahead.js/typeahead.bundle.min.js")

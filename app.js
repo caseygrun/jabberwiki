@@ -48,8 +48,7 @@ app.locals({
 })
 
 
-
-
+// middleware
 app.use(express.favicon());
 app.use(express.logger('dev'));
 
@@ -70,7 +69,7 @@ app.use(require('less-middleware')({ src: __dirname + '/public' }));
 // normal error-handling middleware
 app.use(function(err, req, res, next) {
 	app.get('log').error(err);
-	res.render('error.jade')
+	res.render('error.jade', err)
 })
 
 // development only
@@ -124,11 +123,10 @@ app.set('store', (function() {
 	return appStore;
 })() )
 
+
+app.pages = pages
+
 routes = routes(app)
-
-
-app.get('/', routes.index);
-
 
 pages.init(app,{
 	middleware: [auth('html')],
@@ -158,11 +156,27 @@ pages.init(app,{
 		route: '/pages/[page]/raw',
 		action: routes.page.raw
 	},{
-		route: '/files/[page]/',
+		route: '/files/[page]',
 		action: routes.page.raw
 	}],
 
+	views: [{
+		filter: '*.{jpg,png,gif,tiff}',
+		action: routes.page.views['image']
+	},{
+		filter: '*',
+		action: routes.page.views['default']
+	}],
+
+	editors: [{
+		filter: '*',
+		action: routes.page.editors['default']
+	}]
+
 })
+
+app.get('/', routes.index);
+
 
 // app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/view$/, auth('html'), routes.page.view);
 // app.get(/^\/pages\/([\w\.\/%\(\)\{\}\[\] ]+)\/view\/([\w]+)$/, auth('html'), routes.page.view);
@@ -201,6 +215,9 @@ app.post('/search', auth('html'), routes.special.search)
 app.get('/api/search',auth('json'), routes.api.search)
 app.get('/api/all',auth('json'), routes.api.all)
 app.get('/api/index',auth('json'), routes.api.index)
+
+app.post('/api/preview',auth('json'), routes.api.preview)
+app.post('/api/upload',auth('json'), routes.api.upload)
 
 
 http.createServer(app).listen(app.get('port'), function(){
