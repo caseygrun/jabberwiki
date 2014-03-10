@@ -28,5 +28,5 @@ mixin header(title, parents)
 	if parents && parents.length > 0 
 		ul.breadcrumb
 			for parent, i in parents
-				li: a(href=wiki.url( _.first(parents,i+1).join('/'), 'view' ))=parent
+				li: a(href=wiki.url( _.first(parents,i+1).join('/')+'/', 'view' ))=parent
 				span.divider&nbsp;/&nbsp;
