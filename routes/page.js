@@ -424,6 +424,9 @@
         message = req.param('message');
         author = new storejs.Author(req.user.name, req.user.email);
         return store.create(page, text, author, message, function(err, resource) {
+          if (err) {
+            return next(err);
+          }
           return res.redirect(wiki.url(page, 'view'));
         });
       },

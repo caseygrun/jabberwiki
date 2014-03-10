@@ -298,7 +298,7 @@ module.exports = (app) ->
 			author = new storejs.Author(req.user.name, req.user.email) # TODO
 
 			store.create(page,text,author,message,(err, resource) ->
-				# TODO: handle error
+				if err then return next(err)
 				res.redirect(wiki.url(page,'view'))
 			)
 

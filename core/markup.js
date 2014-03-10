@@ -57,6 +57,7 @@
       }
       options = _.extend({
         to: 'html5',
+        '--section-divs': true,
         '--base-header-level': '2',
         '--mathjax': true,
         '--smart': true

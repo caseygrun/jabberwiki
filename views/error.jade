@@ -4,9 +4,9 @@ extends index
 block content
 	h1 
 
-	.alert.alert-error
-		strong Internal server error 
-		if message 
+	.alert.alert-danger
+		strong Internal server error. 
+		if message
 			#{message}
 		else 
 			| An error occurred while processing this page.

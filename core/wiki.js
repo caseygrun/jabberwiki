@@ -80,7 +80,7 @@
         }
       }
     },
-    pageRegExp: /([\w\.\/%\(\)\{\}\[\] ]+)/,
+    pageRegExp: /([\w\.\/%\(\)\{\}\[\]\- ]+)/,
     varRegExp: /(\w+)/,
     /**
     	 * Accepts a string with one or more placeholders for pages or variables; 
@@ -146,7 +146,8 @@
         title: title,
         ext: ext,
         parents: parents,
-        page: page
+        page: page,
+        path: parents.join('/')
       };
     },
     extname: function(page) {

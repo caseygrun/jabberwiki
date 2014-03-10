@@ -1,7 +1,9 @@
 (function() {
-  var async, fs, markup, storejs, wiki;
+  var async, fs, markup, pth, storejs, wiki;
 
   fs = require('fs');
+
+  pth = require('path');
 
   async = require('async');
 
@@ -87,16 +89,25 @@
           author = new storejs.Author(req.user.name, req.user.email);
           message = "Uploaded file: " + file.name;
           return fs.readFile(file.path, function(err, data) {
+            var newPath;
             if (err) {
               return res.send({
                 error: 'Could not read uploaded file.'
               });
             }
-            return store.create(file.name, data, author, message, function(err, resource) {
-              return res.send({
-                error: err,
-                filename: resource != null ? resource.path : void 0
-              });
+            newPath = pth.join(req.param('path') || '', file.name);
+            return store.create(newPath, data, author, message, function(err, resource) {
+              if (err) {
+                app.get('log').error(err);
+                return res.send(500, {
+                  error: err.message,
+                  filename: resource != null ? resource.path : void 0
+                });
+              } else {
+                return res.send({
+                  filename: resource != null ? resource.path : void 0
+                });
+              }
             });
           });
         } else {

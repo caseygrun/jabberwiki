@@ -58,7 +58,7 @@ module.exports = me =
 			else 
 				page
 
-	pageRegExp: /([\w\.\/%\(\)\{\}\[\] ]+)/, 
+	pageRegExp: /([\w\.\/%\(\)\{\}\[\]\- ]+)/, 
 	varRegExp: /(\w+)/,
 
 	###*
@@ -132,7 +132,8 @@ module.exports = me =
 			title: title,
 			ext: ext,
 			parents: parents,
-			page: page
+			page: page,
+			path: parents.join('/')
 		}
 
 	extname: (page) ->

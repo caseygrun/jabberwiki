@@ -1,4 +1,5 @@
 fs = require('fs')
+pth = require('path')
 async = require('async')
 markup = require('markup')
 wiki = require('wiki')
@@ -63,11 +64,20 @@ module.exports = (app) ->
 				author = new storejs.Author(req.user.name, req.user.email)
 				message = "Uploaded file: #{file.name}"
 
+				# read temporary file
 				fs.readFile file.path,(err, data) ->
 					if err then return res.send({ error: 'Could not read uploaded file.' })
 					
-					store.create file.name, data, author, message, (err, resource) ->
-						res.send({ error: err, filename: resource?.path })
+					# generate path to new resource
+					newPath = pth.join(req.param('path') || '', file.name)
+
+					# commit new resource to repository
+					store.create newPath, data, author, message, (err, resource) ->
+						if err  
+							app.get('log').error(err);
+							res.send(500,{ error: err.message, filename: resource?.path })
+						else 
+							res.send({ filename: resource?.path })
 			else
 				res.send({ error: 'No upload found.' })
 
