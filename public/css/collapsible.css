@@ -15,18 +15,21 @@ li.collapsed > ul {
 }
 li.collapsed > ul > li {
 	display: inline-block;
-	border: solid 1px #aaa;
+	border: solid 1px #e1e1e8;
 	border-radius: 5px;
-	background-color: #eee;
-	padding: 0px 2px;
+	background-color: #f7f7f9;
+	padding: 0px 3px;
 	margin: 1px 0px 0px 0px;
 
 	/* Ellipsis */
 	max-width: 10em;
+	max-height: 1.6em;
 	overflow-x: hidden;
+	overflow-y: hidden;
+
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	vertical-align: middle;
+	vertical-align: top;
 
 	/* Transition */
 	transition: .5s max-width linear;
@@ -37,8 +40,14 @@ li.collapsed > ul > li {
 
 }
 
+li.collapsed figure
+{
+	/*float:none;*/
+}
+
 li.collapsed > ul > li:hover {
 	max-width: inherit;
+	max-height: inherit;
 }
 
 li.collapsed > ul li:after { content: ","; } 
