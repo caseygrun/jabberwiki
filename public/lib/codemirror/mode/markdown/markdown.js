@@ -88,7 +88,9 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
   ,   linktext = 'link'
   ,   linkhref = 'string'
   ,   em       = 'em'
-  ,   strong   = 'strong';
+  ,   strong   = 'strong'
+  ,   mathinline = 'string'
+  ,   mathdisplay = 'string-2';
 
   var hrRE = /^([*\-=_])(?:\s*\1){2,}\s*$/
   ,   ulRE = /^[*\-+]\s+/
@@ -96,7 +98,7 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
   ,   taskListRE = /^\[(x| )\](?=\s)/ // Must follow ulRE or olRE
   ,   atxHeaderRE = /^#+/
   ,   setextHeaderRE = /^(?:\={1,}|-{1,})$/
-  ,   textRE = /^[^#!\[\]*_\\<>` "'(]+/;
+  ,   textRE = /^[^\$#!\[\]*_\\<>` "'(]+/;
 
   function switchInline(stream, state, f) {
     state.f = state.inline = f;
@@ -467,6 +469,17 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       return "tag";
     }
 
+    if (ch === '$') {
+      if (stream.eat('$')) {
+        return switchInline(stream, state, displayMath)
+        // state.f = displayMath
+        // return mathdisplay
+      }
+      // state.f = inlineMath
+      // return mathinline
+      return switchInline(stream, state, inlineMath)
+    }
+
     var ignoreUnderscore = false;
     if (!modeCfg.underscoresBreakWords) {
       if (ch === '_' && stream.peek() !== '_' && stream.match(/(\w)/, false)) {
@@ -630,6 +643,18 @@ CodeMirror.defineMode("markdown", function(cmCfg, modeCfg) {
       savedInlineRE[endChar] = new RegExp('^(?:[^\\\\]|\\\\.)*?(' + endChar + ')');
     }
     return savedInlineRE[endChar];
+  }
+
+  function inlineMath(stream, state) {
+    stream.match(/[^$]+\$/)
+    state.f = state.inline = inlineNormal
+    return mathinline
+  }
+
+  function displayMath (stream, state) {
+    stream.match(/[^$]+\$\$/)
+    state.f = state.inline = inlineNormal
+    return mathdisplay
   }
 
   var mode = {
