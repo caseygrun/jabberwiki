@@ -13,11 +13,21 @@ block content
 			strong Edit page text 
 			| Edit the body of the page using Pandoc markdown
 
+
 		div#editor.panel.panel-default
+
 			.panel-body
 
+				.jw-ed-imgdialog
+
+				.jw-ed-linkdialog.panel.panel-default(style="display:none; z-index:1000")
+					.panel-body
+						input.form-control(type="text", placeholder="Link to page...")
+					.panel-footer
+						button.btn.btn-default Add
+
 				.form-group
-					.btn-toolbar.jw-toolbar
+					.btn-toolbar.jw-ed-tbar
 						.btn-group
 							button.btn.btn-default(data-cmd="markdownBold"): i.fa.fa-bold
 							button.btn.btn-default(data-cmd="markdownItalic"): i.fa.fa-italic
@@ -29,17 +39,29 @@ block content
 						.btn-group
 							button.btn.btn-default(data-cmd="markdownTable"): i.fa.fa-table
 						.btn-group
-							button.btn.btn-default(data-cmd=""): i.fa.fa-link
-							button.btn.btn-default(data-cmd=""): i.fa.fa-picture-o
+							button.btn.btn-default(data-action="showLinkDialog"): i.fa.fa-link
+							button.btn.btn-default(data-action="showImgDialog"): i.fa.fa-picture-o
 
 				.form-group
 					textarea#text(name="text",rows=12).form-control.jw-ed-contents
 						!{content}
 
-			.panel-footer
+			.panel-footer.jw-ed-bbar
 				.form-group
 					textarea#message(name="message", rows=2, placeholder="Commit Message").form-control.jw-ed-commit
-				input(type="submit").btn.btn-primary Save
+				.btn-toolbar
+					input(type="submit").btn.btn-primary Save
+					button(data-action="showPreview").btn.btn.btn-default Preview
+
+	div.row#preview.jw-ed-preview
 
 block scripts
 	script(type="text/javascript" src="/js/editor.js")
+	script(type="text/javascript")
+		var jw = jw || {}
+		jw.page = {}
+		jw.page.metadata = !{JSON.stringify(metadata)}
+	script(type="text/javascript")
+		$(function() {
+			var ed = $('#editor').jwEditor({ path: jw.page.metadata.path })
+		})
