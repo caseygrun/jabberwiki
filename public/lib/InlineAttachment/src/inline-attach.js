@@ -146,7 +146,11 @@
             var result = settings.onReceivedFile(file);
             if (result !== false) {
                 lastValue = settings.progressText;
-                editor.setValue(appendInItsOwnLine(editor.getValue(), lastValue));
+                if(editor.insert) {
+                    editor.insert(lastValue)
+                } else {
+                    editor.setValue(appendInItsOwnLine(editor.getValue(), lastValue));                    
+                }
             }
         };
 

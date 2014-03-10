@@ -27,6 +27,9 @@
                 var cursor = codeMirror.getCursor();
                 codeMirror.setValue(val);
                 codeMirror.setCursor(cursor);
+            },
+            insert: function (val) {
+                codeMirror.replaceRange(val,codeMirror.getCursor())
             }
         };
     }
