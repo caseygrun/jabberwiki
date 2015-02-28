@@ -48,7 +48,9 @@
             el              = codeMirror.getWrapperElement();
 
         el.addEventListener('paste', function(e) {
-            inlineattach.onPaste(e);
+            if(!e.shiftKey) { 
+                inlineattach.onPaste(e);
+            }
         }, false);
 
         codeMirror.setOption('onDragEvent', function(data, e) {
