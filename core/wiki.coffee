@@ -1,5 +1,7 @@
 pth = require('path')
+fs = require('fs')
 _ = require('underscore')
+async = require('async')
 mkdirp = require('mkdirp')
 URI = require('URIjs')
 tmp = require('tmp')
@@ -139,6 +141,150 @@ module.exports = me =
 	extname: (page) ->
 		data = me.parsePath(page)
 		data.ext
+
+	###*
+	 * Determines the type of resource at `page`, retrieves its contents, and passes to the appropriate `callback`. 
+	 * If a file, retrieves its contents. If a folder, retrieves a list of contained resources. 
+	 * @param {String} page Path to the page
+	 * @param {Object} [options={}] Options
+	 * @param {String} [options.id=null] Version of the page to retrieve, or null to retrieve the latest version
+	 * @param {Object} callbacks Hash describing several possible callbacks:
+	 * 
+	 * @param {Function} callbacks.file Callback to be executed if the resource is a file
+	 * @param {Error} callbacks.file.err Error if one occurs while reading the contents of a file
+	 * @param {String} callbacks.file.text Text of the retrieved page
+	 * 
+	 * @param {Function} callbacks.folder Callback to be executed if the resource is a folder
+	 * @param {Error} callbacks.folder.err Error if one occurs while reading the contents of a folder
+	 * @param {store.Resource[]} callbacks.folder.contents Array of resources representing the items contained by the directory
+	 * 
+	 * @param {Function} callbacks.error Callback to be executed if an error occurs
+	 * @param {Error} callbacks.error.err The error
+	 *
+	 * @param {Function} callbacks.default Callback to be executed if the type of the object is something else
+	 * @param {Error} callbacks.default.err Error if one occurs 
+	 * @param {String} callbacks.default.type Type returned by the store
+	 * @param {Mixed} callbacks.default.results Results if any
+	###
+	retrieve: (page, options={}, store, callbacks) ->
+		callbacks.default ?= () -> 
+		callbacks.file ?= callbacks.default
+		callbacks.folder ?= callbacks.default
+		callbacks.error ?= callbacks.default
+
+		store.type page, null, (err, type) ->
+			if err then callbacks.error(err)
+			else switch type 
+				when "file" then store.read page, options, callbacks.file
+				when "folder" then store.list page, callbacks.folder
+				else callbacks.default err, type, null
+
+	###*
+	 * Generates an asynchronous JSON pipe that looks for image links in a 
+	 * Pandoc tree, downloads those images from `store` into wiki#tempFile s  
+	 * and replaces the images in the document with references.
+	 * @param  {store.Store} store Store from which to pull images
+	 * @param  {String} format Output format
+	 * @return {Function} replacePipe
+	 * 
+	 * @return {Object} return.doc Pandoc document
+	 * @return {Function} return.callback Callback to be passed the rewritten document
+	 * @return {Error} return.callback.err
+	 * @return {Object} return.callback.modifiedDoc
+	###
+	replaceImagesWithLocals: (store,format) ->
+
+		return (doc, callback) ->
+			console.log "Replacing images with local copies..."
+
+			localImages = []
+			remoteImages = []
+			imageMap = {}
+
+			# filter to find images
+			findImages = (key, value, format, meta) ->
+				if key == 'Image'
+					[text, [url, title]] = value
+					parsedUri = URI(url)
+					console.log url
+					if !parsedUri.protocol() 
+						# add to localImages
+						localImages.push(url)
+						# dockers.filters.elements.Image(text, [url, title])
+						null
+					else
+						# add to remoteImages
+						remoteImages.push(url)
+						# dockers.filters.elements.Image(text, [url, title])
+						null
+			
+			# filter to rewrite images with data from imageMap
+			rewriteImages = (key, value, format, meta) ->
+				if key == 'Image'
+					[text, [url, title]] = value
+					dockers.filters.elements.Image(text, [imageMap[url], title])
+
+
+			findPipe = dockers.filters.toJSONPipe(findImages, format) 
+			
+			console.log "Finding images..."
+
+			# find images
+			findPipe doc, (err, tree) ->
+				
+				console.log "Done finding images; localImages: "
+				console.log localImages
+				console.log "remoteImages: "
+				console.log remoteImages
+
+				# download images and save paths in imageMap
+				async.parallel [
+					(cb) ->
+						console.log "Downloading local images..."
+						async.eachSeries(localImages, 
+							((image, cb) ->
+								store.read image, {encoding: 'buffer', maxBuffer: 10*1000*1024}, (err, data) ->
+									if err then return cb(err)
+									me.tempFile (err, tempPath) ->
+										if err then return cb(err)
+										tempPath += pth.extname(image)
+										console.log "Downloading "+image+" to "+tempPath
+										imageMap[image] = tempPath
+										fs.writeFile(tempPath, data, cb)
+							),
+							(err) ->
+								console.log "Done downloading local images"
+								cb(err)
+						)
+					(cb) ->
+						console.log "Downloading remote images..."
+						async.eachSeries(remoteImages, 
+							((image, cb) ->
+								me.tempFile (err, tempPath) ->
+									if err then return cb(err)
+									tempPath += pth.extname(image)
+									console.log "Downloading "+image+" to "+tempPath
+									imageMap[image] = tempPath
+									request(image).pipe(fs.createWriteStream(tempPath)).on('end',() -> cb(null))
+							),
+							(err) ->
+								console.log "Done remote local images"
+								cb(err)
+						)
+				], (err) ->
+					console.log "Done downloading all images"
+					if err then return callback(err)
+					
+					# rewrite image tags in the document
+					console.log "Replacing images..."
+					rewritePipe = dockers.filters.toJSONPipe(rewriteImages, format)
+					rewritePipe doc, callback
+
+
+
+ 
+
+
 
 	replaceWikiLinks: (format) ->
 		rewriteImageUrl = (fileName) ->

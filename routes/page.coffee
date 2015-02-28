@@ -3,43 +3,7 @@ markup = require('markup')
 wiki = require('wiki')
 storejs = require('revisionary')
 
-###*
- * Determines the type of resource at `page`, retrieves its contents, and passes to the appropriate `callback`. 
- * If a file, retrieves its contents. If a folder, retrieves a list of contained resources. 
- * @param {String} page Path to the page
- * @param {Object} [options={}] Options
- * @param {String} [options.id=null] Version of the page to retrieve, or null to retrieve the latest version
- * @param {Object} callbacks Hash describing several possible callbacks:
- * 
- * @param {Function} callbacks.file Callback to be executed if the resource is a file
- * @param {Error} callbacks.file.err Error if one occurs while reading the contents of a file
- * @param {String} callbacks.file.text Text of the retrieved page
- * 
- * @param {Function} callbacks.folder Callback to be executed if the resource is a folder
- * @param {Error} callbacks.folder.err Error if one occurs while reading the contents of a folder
- * @param {store.Resource[]} callbacks.folder.contents Array of resources representing the items contained by the directory
- * 
- * @param {Function} callbacks.error Callback to be executed if an error occurs
- * @param {Error} callbacks.error.err The error
- *
- * @param {Function} callbacks.default Callback to be executed if the type of the object is something else
- * @param {Error} callbacks.default.err Error if one occurs 
- * @param {String} callbacks.default.type Type returned by the store
- * @param {Mixed} callbacks.default.results Results if any
-###
-retrieve = (page, options={}, store, callbacks) ->
-	callbacks.default ?= () -> 
-	callbacks.file ?= callbacks.default
-	callbacks.folder ?= callbacks.default
-	callbacks.error ?= callbacks.default
-
-	store.type page, null, (err, type) ->
-		if err then callbacks.error(err)
-		else switch type 
-			when "file" then store.read page, options, callbacks.file
-			when "folder" then store.list page, callbacks.folder
-			else callbacks.default err, type, null
-
+retrieve = wiki.retrieve
 
 module.exports = (app) ->
 	return me = 
@@ -88,24 +52,6 @@ module.exports = (app) ->
 						else
 							return view.action(text, metadata, req, res, next)
 
-					# async.waterfall [
-					# 	(cb) -> wiki.preprocess(page,text,cb)
-					# 	(text,metadata,cb) ->
-					# 		format = 'markdown'
-					# 		markup.html(text,{from: format},(err, html) -> cb(err,html,metadata))
-
-					# ], (err, html, metadata) -> 
-					# 	if err? then return next(err)
-
-					# 	if (html? and metadata?) and (not err?) 
-					# 		res.render('pages/view.jade',{
-					# 			content: html, 
-					# 			title: metadata.title, 
-					# 			parents: metadata.parents, 
-					# 			version: version })
-					# 	else
-					# 		res.redirect(wiki.url(page,'edit'))
-					
 				'error': (err) -> next(err)
 				'default': () -> res.redirect(wiki.url(page,'edit'))
 			}
@@ -249,20 +195,28 @@ module.exports = (app) ->
 					format = 'markdown'	
 					switch to
 						when 'docx','pdf'
-							markup.convertFile text, {from: format, to: to, '--self-contained':true }, (err, filename) ->
-								if err then return next(err)
-								res.download filename, "#{page}.#{to}", (err) ->
+							markup.pipelineFile(text, {from: format, to: to, '--self-contained':true }, 
+								[ wiki.replaceImagesWithLocals(store, to) ],
+								(err, filename) ->
+									console.log 
 									if err then return next(err)
+									res.download filename, "#{page}.#{to}", (err) ->
+										if err then return next(err)
+							)
+
 						else
-							markup.convert text, {from: format, to: to, '--self-contained':true }, (err, text) ->
-								if err then return next(err)
-								
-								switch to
-									when 'html','slidy','slideous','dzslides','s5'
-										res.send text
-									else
-										res.attachment "#{page}.#{to}" 
-										res.send text
+							markup.pipeline(text, {from: format, to: to, '--self-contained':true },
+								[ wiki.replaceImagesWithLocals(store, to) ],
+								(err, text) ->
+									if err then return next(err)
+									
+									switch to
+										when 'html','slidy','slideous','dzslides','s5'
+											res.send text
+										else
+											res.attachment "#{page}.#{to}" 
+											res.send text
+							)
 
 				default: (err,type,result) -> res.redirect(wiki.url(page,'view'))
 			}

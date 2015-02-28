@@ -335,11 +335,12 @@
             switch (to) {
               case 'docx':
               case 'pdf':
-                return markup.convertFile(text, {
+                return markup.pipelineFile(text, {
                   from: format,
                   to: to,
                   '--self-contained': true
-                }, function(err, filename) {
+                }, [wiki.replaceImagesWithLocals(store, to)], function(err, filename) {
+                  console.log;
                   if (err) {
                     return next(err);
                   }
@@ -350,11 +351,11 @@
                   });
                 });
               default:
-                return markup.convert(text, {
+                return markup.pipeline(text, {
                   from: format,
                   to: to,
                   '--self-contained': true
-                }, function(err, text) {
+                }, [wiki.replaceImagesWithLocals(store, to)], function(err, text) {
                   if (err) {
                     return next(err);
                   }

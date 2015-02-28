@@ -1,9 +1,13 @@
 (function() {
-  var URI, config, dockers, me, mkdirp, pth, tempDir, tmp, _;
+  var URI, async, config, dockers, fs, me, mkdirp, pth, tempDir, tmp, _;
 
   pth = require('path');
 
+  fs = require('fs');
+
   _ = require('underscore');
+
+  async = require('async');
 
   mkdirp = require('mkdirp');
 
@@ -154,6 +158,113 @@
       var data;
       data = me.parsePath(page);
       return data.ext;
+    },
+    /**
+    	 * Generates an asynchronous JSON pipe that looks for image links in a 
+    	 * Pandoc tree, downloads those images from `store` into wiki#tempFile s  
+    	 * and replaces the images in the document with references.
+    	 * @param  {store.Store} store Store from which to pull images
+    	 * @param  {String} format Output format
+    	 * @return {Function} replacePipe
+    	 * 
+    	 * @return {Object} return.doc Pandoc document
+    	 * @return {Function} return.callback Callback to be passed the rewritten document
+    	 * @return {Error} return.callback.err
+    	 * @return {Object} return.callback.modifiedDoc
+    */
+
+    replaceImagesWithLocals: function(store, format) {
+      return function(doc, callback) {
+        var findImages, findPipe, imageMap, localImages, remoteImages, rewriteImages;
+        console.log("Replacing images with local copies...");
+        localImages = [];
+        remoteImages = [];
+        imageMap = {};
+        findImages = function(key, value, format, meta) {
+          var parsedUri, text, title, url, _ref;
+          if (key === 'Image') {
+            text = value[0], (_ref = value[1], url = _ref[0], title = _ref[1]);
+            parsedUri = URI(url);
+            console.log(url);
+            if (!parsedUri.protocol()) {
+              localImages.push(url);
+              return null;
+            } else {
+              remoteImages.push(url);
+              return null;
+            }
+          }
+        };
+        rewriteImages = function(key, value, format, meta) {
+          var text, title, url, _ref;
+          if (key === 'Image') {
+            text = value[0], (_ref = value[1], url = _ref[0], title = _ref[1]);
+            return dockers.filters.elements.Image(text, [imageMap[url], title]);
+          }
+        };
+        findPipe = dockers.filters.toJSONPipe(findImages, format);
+        console.log("Finding images...");
+        return findPipe(doc, function(err, tree) {
+          console.log("Done finding images; localImages: ");
+          console.log(localImages);
+          console.log("remoteImages: ");
+          console.log(remoteImages);
+          return async.parallel([
+            function(cb) {
+              console.log("Downloading local images...");
+              return async.eachSeries(localImages, (function(image, cb) {
+                return store.read(image, {
+                  encoding: 'buffer',
+                  maxBuffer: 10 * 1000 * 1024
+                }, function(err, data) {
+                  if (err) {
+                    return cb(err);
+                  }
+                  return me.tempFile(function(err, tempPath) {
+                    if (err) {
+                      return cb(err);
+                    }
+                    tempPath += pth.extname(image);
+                    console.log("Downloading " + image + " to " + tempPath);
+                    imageMap[image] = tempPath;
+                    return fs.writeFile(tempPath, data, cb);
+                  });
+                });
+              }), function(err) {
+                console.log("Done downloading local images");
+                return cb(err);
+              });
+            }, function(cb) {
+              console.log("Downloading remote images...");
+              return async.eachSeries(remoteImages, (function(image, cb) {
+                return me.tempFile(function(err, tempPath) {
+                  if (err) {
+                    return cb(err);
+                  }
+                  tempPath += pth.extname(image);
+                  console.log("Downloading " + image + " to " + tempPath);
+                  imageMap[image] = tempPath;
+                  return request(image).pipe(fs.createWriteStream(tempPath)).on('end', function() {
+                    return cb(null);
+                  });
+                });
+              }), function(err) {
+                console.log("Done remote local images");
+                return cb(err);
+              });
+            }
+          ], function(err) {
+            var rewritePipe;
+            console.log("Done downloading all images");
+            if (err) {
+              return callback(err);
+            }
+            console.log("Replacing images...");
+            rewritePipe = dockers.filters.toJSONPipe(rewriteImages, format);
+            return rewritePipe(doc, callback);
+          });
+        });
+      };
     },
     replaceWikiLinks: function(format) {
       var rewriteImageUrl, wikiLinks;
