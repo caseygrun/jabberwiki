@@ -169,3 +169,6 @@ q.test 'replaceImages', () ->
 
 	testDoc2_res = wiki.replaceWikiLinks(testDoc2);
 	q.deepEqual(testDoc2_res,testDoc2_expect,'Image without fully qualified URI is changed to include a file path')
+
+q.test 'replaceImagesWithLocals', () ->
+	
