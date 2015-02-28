@@ -18,13 +18,18 @@ h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
 }
 
 
-/*figure 
+#content {
+	line-height: 1.8em;
+}
+
+figure 
 {
 	border: solid 1px #e1e1e8;
 	border-radius: 5px;
 	background-color: #f7f7f9;
 	padding: 5px;
 	float:right;
+	clear:right;
 }
 
 figure img
@@ -32,4 +37,20 @@ figure img
 	border: solid 1px #e1e1e8;
 	border-radius: 5px;
 	background-color: #ffffff;
-}*/
+	max-width:300px;
+}
+
+
+.page-tabs {
+	margin-top:25px;
+}
+
+.page-header {
+	margin: 20px 0px 20px;
+}
+
+.page-header + .breadcrumb {
+	margin-top: -20px;
+	border-top-right-radius: 0px;
+	border-top-left-radius: 0px;
+}

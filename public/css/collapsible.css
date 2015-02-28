@@ -4,14 +4,14 @@ li.collapsed
 {
 	/*overflow: hidden;*/
 	text-overflow: ellipsis;
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 }
 
 li.collapsed > ul { 
 	list-style: none; 
 	margin: 0; 
 	padding: 0; 
-	display: inline-block;
+	display: inline;
 }
 li.collapsed > ul > li {
 	display: inline-block;
@@ -23,7 +23,7 @@ li.collapsed > ul > li {
 
 	/* Ellipsis */
 	max-width: 10em;
-	max-height: 1.6em;
+	max-height: 1.7em;
 	overflow-x: hidden;
 	overflow-y: hidden;
 
@@ -50,9 +50,9 @@ li.collapsed > ul > li:hover {
 	max-height: inherit;
 }
 
-li.collapsed > ul li:after { content: ","; } 
+/*li.collapsed > ul li:after { content: ","; } 
 li.collapsed > ul li:last-child:after { content: ""; }
-
+*/
 li.collapsed > ul > li ul {
 	display: none;
 }
