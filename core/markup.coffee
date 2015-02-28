@@ -161,7 +161,7 @@ module.exports = me =
 		dockers.pipeline(text, options, middleware, callback)
 
 	pipelineFile: (text, options, middleware, callback) ->
-		# pipeline(text, from, to, options, middleware, me.convertFile, callback)
+		dockers.pipelineFile(text, options, middleware, callback)
 
 	convert: (text, options={}, callback) ->
 		dockers.convert(text, options, callback)
@@ -180,7 +180,7 @@ module.exports = me =
 	 * @param  {String} callback.result Output text
 	###
 	html: (text, options={}, callback) ->
-		options = _.extend( { to: 'html5', '--section-divs':true, '--base-header-level':'2','--mathjax':true,'--smart':true}, options ) #['--table-of-contents','--base-header-level=2','--mathjax','--smart']
+		options = _.extend( { to: 'html5', '--section-divs':true, '--base-header-level':'2','--mathjax':true,'--smart':true, '-S':true}, options ) #['--table-of-contents','--base-header-level=2','--mathjax','--smart']
 		
 		# TODO: Include a template so Pandoc will render the TOC
 		# me.pipeline(text, options, 

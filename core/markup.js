@@ -29,7 +29,9 @@
     pipeline: function(text, options, middleware, callback) {
       return dockers.pipeline(text, options, middleware, callback);
     },
-    pipelineFile: function(text, options, middleware, callback) {},
+    pipelineFile: function(text, options, middleware, callback) {
+      return dockers.pipelineFile(text, options, middleware, callback);
+    },
     convert: function(text, options, callback) {
       if (options == null) {
         options = {};
@@ -60,7 +62,8 @@
         '--section-divs': true,
         '--base-header-level': '2',
         '--mathjax': true,
-        '--smart': true
+        '--smart': true,
+        '-S': true
       }, options);
       return me.pipeline(text, options, [wiki.replaceWikiLinks('html')], callback);
     }
