@@ -29,7 +29,8 @@
             },
             type: 'POST',
             success: function(data, status, xhr) {
-              return preview.html(data);
+              preview.html(data);
+              return MathJax.Hub.Typeset();
             },
             failure: function(xhr, status, err) {
               preview.html("Error generating preview.");
@@ -86,7 +87,7 @@
         indentWithTabs: true,
         indentUnit: 4,
         lineNumbers: true,
-        autoCloseBrackets: "()[]{}''\"\"**$$",
+        autoCloseBrackets: "()[]{}''\"\"**$$^^~~",
         matchBrackets: true,
         foldGutter: {
           rangeFinder: CodeMirror.fold.markdown

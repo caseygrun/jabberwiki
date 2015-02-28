@@ -39,6 +39,7 @@
 					type: 'POST',
 					success: (data, status, xhr) ->
 						preview.html(data)
+						MathJax.Hub.Typeset() 
 					failure: (xhr, status, err) ->
 						preview.html("Error generating preview.")
 						console.log err
