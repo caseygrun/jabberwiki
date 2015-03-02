@@ -107,7 +107,7 @@
       varRegExpStr = regExpToStrPartial(me.varRegExp);
       route = route.replace(/[\-\/\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
       route = route.replace(/\[\w+\]/, pageRegExpStr);
-      route = route.replace(/\{\w+\}/, varRegExpStr);
+      route = route.replace(/\{\w+\}/g, varRegExpStr);
       return RegExp(route);
     },
     tempFile: function(data, cb) {

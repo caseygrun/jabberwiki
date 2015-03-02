@@ -1,6 +1,6 @@
 util = require('util')
 
-if not QUnit? then QUnit = require('qunit-cli')
+# if not QUnit? then QUnit = require('qunit-cli')
 q = QUnit
 
 # q.module('grammar');
@@ -9,6 +9,7 @@ q = QUnit
 # q.test('grammar', ->
 # 	console.log grammar.parse('hello {{world}}')
 # )
+
 
 q.module('wiki')
 wiki = require('../wiki')
@@ -32,9 +33,16 @@ q.test 'filename', ->
 
 q.test 'routeToRegExp', ->
 	route1 = wiki.routeToRegExp('/pages/[page]/view');
-	test1 = '/pages/page1/view'
-	q.ok(route1.test(test1))
-	q.deepEqual test1.match(route1),[test1, 'page1']
+	test1a = '/pages/page1/view'
+	test1b = '/pages/folder1/folder2/page2/view'
+	q.ok(route1.test(test1a))
+	q.deepEqual test1a.match(route1),[test1a, 'page1']
+	q.deepEqual test1b.match(route1),[test1b, 'folder1/folder2/page2']
+
+	route2 = wiki.routeToRegExp('/pages/[page]/diff/{v1}/{v2}');
+	test2 = '/pages/Classes/ES-230.md/diff/ac632a2078121fa592dbb547e363c833856508d0/current'
+
+	q.deepEqual test2.match(route2),[test2, 'Classes/ES-230.md', 'ac632a2078121fa592dbb547e363c833856508d0', 'current' ]
 
 
 q.test 'replaceWikiLinks', ->
@@ -171,4 +179,5 @@ q.test 'replaceImages', () ->
 	q.deepEqual(testDoc2_res,testDoc2_expect,'Image without fully qualified URI is changed to include a file path')
 
 q.test 'replaceImagesWithLocals', () ->
+	q.ok true
 	

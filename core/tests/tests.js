@@ -1,11 +1,7 @@
 (function() {
-  var QUnit, q, util, wiki;
+  var q, util, wiki;
 
   util = require('util');
-
-  if (typeof QUnit === "undefined" || QUnit === null) {
-    QUnit = require('qunit-cli');
-  }
 
   q = QUnit;
 
@@ -35,11 +31,16 @@
   });
 
   q.test('routeToRegExp', function() {
-    var route1, test1;
+    var route1, route2, test1a, test1b, test2;
     route1 = wiki.routeToRegExp('/pages/[page]/view');
-    test1 = '/pages/page1/view';
-    q.ok(route1.test(test1));
-    return q.deepEqual(test1.match(route1), [test1, 'page1']);
+    test1a = '/pages/page1/view';
+    test1b = '/pages/folder1/folder2/page2/view';
+    q.ok(route1.test(test1a));
+    q.deepEqual(test1a.match(route1), [test1a, 'page1']);
+    q.deepEqual(test1b.match(route1), [test1b, 'folder1/folder2/page2']);
+    route2 = wiki.routeToRegExp('/pages/[page]/diff/{v1}/{v2}');
+    test2 = '/pages/Classes/ES-230.md/diff/ac632a2078121fa592dbb547e363c833856508d0/current';
+    return q.deepEqual(test2.match(route2), [test2, 'Classes/ES-230.md', 'ac632a2078121fa592dbb547e363c833856508d0', 'current']);
   });
 
   q.test('replaceWikiLinks', function() {
@@ -196,6 +197,8 @@
     return q.deepEqual(testDoc2_res, testDoc2_expect, 'Image without fully qualified URI is changed to include a file path');
   });
 
-  q.test('replaceImagesWithLocals', function() {});
+  q.test('replaceImagesWithLocals', function() {
+    return q.ok(true);
+  });
 
 }).call(this);

@@ -91,7 +91,7 @@ module.exports = me =
 		# http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
 		route = route.replace(/[\-\/\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
 		route = route.replace(/\[\w+\]/,pageRegExpStr)
-		route = route.replace(/\{\w+\}/,varRegExpStr)
+		route = route.replace(/\{\w+\}/g,varRegExpStr)
 		RegExp(route)
 
 	tempFile: (data,cb) ->
