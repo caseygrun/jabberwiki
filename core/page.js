@@ -19,10 +19,18 @@
    * 
    * @property {String} method 
    * HTTP verb to which this tool should respond
-   *
-   * @property {Function} action 
+  */
+
+
+  /*
+   * @method {Function} action 
    * Function which produces the page output
    *
+   * @param {String} text 
+   * @param {Object} metadata
+   * @param {Request} req 
+   * @param {Response} res
+   * @param {Function} next
   */
 
 
@@ -31,16 +39,19 @@
    * Represents a renderer for a particular type of page
    * 
    * @property {String} filter 
-   * Minimatch-compatible pattern describing to which pages this view applies 
-   *
-   * @property {Function} action 
+   * Minimatch-compatible pattern describing to which pages this view applies
+  */
+
+
+  /*
+   * @method {Function} action 
    * Function that generates the view. 
    *
-   * @property {String} action.text 
-   * @property {Object} action.metadata
-   * @property {Request} action.req 
-   * @property {Response} action.res
-   * @property {Function} action.next
+   * @param {String} text 
+   * @param {Object} metadata
+   * @param {Request} req 
+   * @param {Response} res
+   * @param {Function} next
   */
 
 
@@ -49,16 +60,19 @@
    * Represents an editor for a particular type of page
    * 
    * @property {String} filter 
-   * Minimatch-compatible pattern describing to which pages this editor applies 
-   *
-   * @property {Function} action 
+   * Minimatch-compatible pattern describing to which pages this editor applies
+  */
+
+
+  /*
+   * @method {Function} action 
    * Function that generates the editor. 
    *
-   * @property {String} action.text 
-   * @property {Object} action.metadata
-   * @property {Request} action.req 
-   * @property {Response} action.res
-   * @property {Function} action.next  
+   * @param {String} text 
+   * @param {Object} metadata
+   * @param {Request} req 
+   * @param {Response} res
+   * @param {Function} next  
    *
   */
 
