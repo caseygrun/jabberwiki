@@ -7,7 +7,7 @@ module.exports = (grunt) ->
 			compile:
 				files: [{
 					expand: true,
-					src: ["core/**/*.coffee","routes/**/*.coffee", "public/js/**/*.coffee"]
+					src: ["*.coffee","core/**/*.coffee","routes/**/*.coffee", "public/js/**/*.coffee"]
 					ext: ".js"
 				}]
 	});

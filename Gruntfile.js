@@ -7,7 +7,7 @@
           files: [
             {
               expand: true,
-              src: ["**/*.coffee"],
+              src: ["*.coffee", "core/**/*.coffee", "routes/**/*.coffee", "public/js/**/*.coffee"],
               ext: ".js"
             }
           ]
