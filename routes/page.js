@@ -9,63 +9,7 @@
 
   storejs = require('revisionary');
 
-  /**
-   * Determines the type of resource at `page`, retrieves its contents, and passes to the appropriate `callback`. 
-   * If a file, retrieves its contents. If a folder, retrieves a list of contained resources. 
-   * @param {String} page Path to the page
-   * @param {Object} [options={}] Options
-   * @param {String} [options.id=null] Version of the page to retrieve, or null to retrieve the latest version
-   * @param {Object} callbacks Hash describing several possible callbacks:
-   * 
-   * @param {Function} callbacks.file Callback to be executed if the resource is a file
-   * @param {Error} callbacks.file.err Error if one occurs while reading the contents of a file
-   * @param {String} callbacks.file.text Text of the retrieved page
-   * 
-   * @param {Function} callbacks.folder Callback to be executed if the resource is a folder
-   * @param {Error} callbacks.folder.err Error if one occurs while reading the contents of a folder
-   * @param {store.Resource[]} callbacks.folder.contents Array of resources representing the items contained by the directory
-   * 
-   * @param {Function} callbacks.error Callback to be executed if an error occurs
-   * @param {Error} callbacks.error.err The error
-   *
-   * @param {Function} callbacks.default Callback to be executed if the type of the object is something else
-   * @param {Error} callbacks.default.err Error if one occurs 
-   * @param {String} callbacks.default.type Type returned by the store
-   * @param {Mixed} callbacks.default.results Results if any
-  */
-
-
-  retrieve = function(page, options, store, callbacks) {
-    if (options == null) {
-      options = {};
-    }
-    if (callbacks["default"] == null) {
-      callbacks["default"] = function() {};
-    }
-    if (callbacks.file == null) {
-      callbacks.file = callbacks["default"];
-    }
-    if (callbacks.folder == null) {
-      callbacks.folder = callbacks["default"];
-    }
-    if (callbacks.error == null) {
-      callbacks.error = callbacks["default"];
-    }
-    return store.type(page, null, function(err, type) {
-      if (err) {
-        return callbacks.error(err);
-      } else {
-        switch (type) {
-          case "file":
-            return store.read(page, options, callbacks.file);
-          case "folder":
-            return store.list(page, callbacks.folder);
-          default:
-            return callbacks["default"](err, type, null);
-        }
-      }
-    });
-  };
+  retrieve = wiki.retrieve;
 
   module.exports = function(app) {
     var me;
@@ -102,6 +46,9 @@
             metadata: metadata
           });
         }
+      },
+      differs: {
+        "default": function() {}
       },
       /**
       		 * Route to view a page as HTML
@@ -247,7 +194,7 @@
             }, cb);
           }, function(cb) {
             return store.read(page, {
-              id: v1
+              id: v2
             }, cb);
           }
         ], function(err, pages) {
@@ -438,17 +385,49 @@
       */
 
       remove: function(req, res, next) {
-        var page, store;
+        var author, message, page, store;
         store = app.get('store');
         page = wiki.filename(req.sanitize(0).trim());
-        return store.remove(page, function(err) {
-          if (err) {
-            return next(err);
-          }
-          return res.redirect(wiki.mainPage());
-        });
+        message = req.param('message');
+        author = new storejs.Author(req.user.name, req.user.email);
+        console.log(req.method);
+        switch (req.method) {
+          case 'GET':
+            return res.render('pages/remove.jade', {
+              page: page
+            });
+          case 'POST':
+            return store.remove(page, author, message, function(err) {
+              if (err) {
+                return next(err);
+              }
+              return res.redirect(wiki.mainPage());
+            });
+        }
       },
-      move: function(req, res, next) {},
+      move: function(req, res, next) {
+        var author, dest, message, page, store;
+        store = app.get('store');
+        page = wiki.filename(req.sanitize(0).trim());
+        message = req.param('message');
+        author = new storejs.Author(req.user.name, req.user.email);
+        switch (req.method) {
+          case 'GET':
+            return res.render('pages/move.jade', {
+              page: page
+            });
+          case 'POST':
+            dest = wiki.filename(req.sanitize('destination').trim());
+            console.log(req.sanitize('destination'));
+            console.log(dest);
+            return store.move(page, dest, author, message, function(err) {
+              if (err) {
+                return next(err);
+              }
+              return res.redirect(wiki.url(dest, 'view'));
+            });
+        }
+      },
       discuss: {
         view: function(req, res, next) {},
         editor: function(req, res, next) {},

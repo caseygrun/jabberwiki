@@ -22,7 +22,7 @@ block content
 		tbody
 			for rev in revisions
 				tr 
-					td: a(href=wiki.url(page,'view',rev.id))=rev.path
+					td: a(href=wiki.url(rev.path,'view',rev.id))=rev.path
 					td= rev.message
 					td= rev.author.toString()
 					td= rev.time

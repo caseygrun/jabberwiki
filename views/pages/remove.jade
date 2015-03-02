@@ -1,0 +1,22 @@
+extends ../index
+include mixins.jade
+
+block title
+	| Remove: #{page}
+block content
+	form(method='post',action=wiki.url(page,'remove'))
+		.panel.panel-danger
+			.panel-heading
+				| Remove page
+
+			.panel-body
+				| Are you sure you want to delete the page #{page}? The page's 
+				| history will be saved, but the page will no longer appear in
+				| directories.
+				
+			.panel-footer
+				.form-group
+					textarea#message(name="message", rows=2, placeholder="Commit Message").form-control
+				.btn-toolbar
+					input(type="submit").btn.btn-danger Delete
+					a.btn.btn-default(href=wiki.url(page, 'view')) Cancel

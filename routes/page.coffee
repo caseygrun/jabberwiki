@@ -20,11 +20,15 @@ module.exports = (app) ->
 						res.render('pages/view.jade',{
 							content: html, 
 							metadata: metadata })
+
 		editors:
 			default: (text, metadata, req, res, next) ->
 				res.render('pages/editor.jade',{
 					content: text, 
 					metadata: metadata  })
+
+		differs:
+			default: () ->
 
 		###*
 		 * Route to view a page as HTML
@@ -135,7 +139,7 @@ module.exports = (app) ->
 
 			async.parallel [
 				(cb) -> store.read(page, {id: v1}, cb), 
-				(cb) -> store.read(page, {id: v1}, cb)
+				(cb) -> store.read(page, {id: v2}, cb)
 			], (err, pages) -> 
 				if err then return next(err)
 				res.render('pages/diff.jade',{
@@ -264,14 +268,40 @@ module.exports = (app) ->
 		###
 		remove: (req,res,next) ->
 			store = app.get('store')
-
 			page = wiki.filename req.sanitize(0).trim()
-			store.remove page, (err) ->
-				if err then return next(err)
-				res.redirect(wiki.mainPage())
+
+			message = req.param('message')
+			author = new storejs.Author(req.user.name, req.user.email) # TODO
+
+			console.log req.method
+			switch req.method
+				when 'GET' # confirm
+						res.render('pages/remove.jade',{ page: page })					
+
+				when 'POST' # perform delete
+					store.remove page, author, message, (err) ->
+						if err then return next(err)
+						res.redirect(wiki.mainPage())
 			
 		move: (req,res,next) ->
+			store = app.get('store')
+			page = wiki.filename req.sanitize(0).trim()
 
+			message = req.param('message')
+			author = new storejs.Author(req.user.name, req.user.email) # TODO
+
+			switch req.method
+				when 'GET' # confirm
+						res.render('pages/move.jade',{ page: page })
+
+				when 'POST' # perform delete
+					dest = wiki.filename req.sanitize('destination').trim()
+					console.log req.sanitize('destination')
+					console.log dest
+					store.move page, dest, author, message, (err) ->
+						if err then return next(err)
+						res.redirect(wiki.url(dest,'view'))
+			
 
 		discuss:
 			view: (req,res,next) ->

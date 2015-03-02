@@ -1,0 +1,21 @@
+extends ../index
+include mixins.jade
+
+block title
+	| Move: #{page}
+block content
+	form(method='post',action=wiki.url(page,'move'))
+		.panel.panel-warning
+			.panel-heading
+				| Move page
+
+			.panel-body
+				| Move page #{page} to: 
+				input#destination(type="text", name="destination").form-control
+				
+			.panel-footer
+				.form-group
+					textarea#message(name="message", rows=2, placeholder="Commit Message").form-control
+				.btn-toolbar
+					input(type="submit").btn.btn-warning Move
+					a.btn.btn-default(href=wiki.url(page, 'view')) Cancel
