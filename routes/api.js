@@ -115,6 +115,150 @@
             error: 'No upload found.'
           });
         }
+      },
+      /**
+      		 * Route to view a page as HTML
+      		 * @param  {Request} req Incoming HTTP request
+      		 * @param  {Response} res Outgoing HTTP response
+      */
+
+      view: function(req, res, next) {
+        var page, store, version;
+        store = app.get('store');
+        page = wiki.filename(req.sanitize(0).trim());
+        version = req.sanitize(1).trim() || null;
+        return wiki.retrieve(page, {
+          id: version
+        }, store, {
+          'folder': function(err, contents) {
+            return me.list(req, res, next);
+          },
+          'file': function(err, text) {
+            if (err != null) {
+              return next(err);
+            }
+            if (!text) {
+              return res.redirect(wiki.url(page, 'edit'));
+            }
+            return wiki.preprocess(page, text, function(err, text, metadata) {
+              if (err != null) {
+                return next(err);
+              }
+              metadata.version = version;
+              return res.send({
+                text: text,
+                metadata: metadata
+              });
+            });
+          },
+          'error': function(err) {
+            return next(err);
+          },
+          'default': function() {
+            return res.send({});
+          }
+        });
+      },
+      diff: function(req, res, next) {
+        var metadata, page, store, v1, v2;
+        store = app.get('store');
+        page = wiki.filename(req.sanitize(0).trim());
+        v1 = req.sanitize(1).trim();
+        v1 = v1 !== 'current' ? v1 : null;
+        v2 = v2 !== 'current' ? v2 : null;
+        metadata = wiki.parsePath(page);
+        return async.parallel([
+          function(cb) {
+            return store.read(page, {
+              id: v1
+            }, cb);
+          }, function(cb) {
+            return store.read(page, {
+              id: v1
+            }, cb);
+          }
+        ], function(err, pages) {
+          if (err) {
+            return next(err);
+          }
+          return res.send({
+            metadata: metadata,
+            page: page,
+            v1: {
+              text: pages[0],
+              version: v1
+            },
+            v2: {
+              text: pages[1],
+              version: v2
+            }
+          });
+        });
+      },
+      list: function(req, res, next) {
+        var metadata, page, store;
+        store = app.get('store');
+        page = wiki.filename(req.sanitize(0).trim());
+        metadata = wiki.parsePath(page);
+        return store.list(page, function(err, resources) {
+          return res.send({
+            resources: resources,
+            metadata: metadata
+          });
+        });
+      },
+      /**
+      		 * Route to view the raw source of a page
+      		 * @param  {Request} req Incoming HTTP request
+      		 * @param  {Response} res Outgoing HTTP response
+      */
+
+      raw: function(req, res) {
+        var ext, page, store;
+        store = app.get('store');
+        page = wiki.filename(req.sanitize(0).trim());
+        ext = wiki.extname(page);
+        return retrieve(page, {
+          encoding: 'buffer',
+          maxBuffer: 10 * 1000 * 1024
+        }, store, {
+          file: function(err, text) {
+            res.type(ext);
+            return res.send(text);
+          },
+          folder: function(err, contents) {
+            var resource;
+            return res.send(((function() {
+              var _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = contents.length; _i < _len; _i++) {
+                resource = contents[_i];
+                _results.push(resource.path);
+              }
+              return _results;
+            })()).join('\n'));
+          }
+        });
+      },
+      /**
+      		 * Route to edit the contents of a page
+      		 * @param  {Request} req Incoming HTTP request
+      		 * @param  {Response} res Outgoing HTTP response
+      */
+
+      edit: function(req, res, next) {
+        var author, message, page, store, text;
+        store = app.get('store');
+        page = wiki.filename(req.sanitize(0).trim());
+        text = req.param('text');
+        message = req.param('message');
+        author = new storejs.Author(req.user.name, req.user.email);
+        return store.create(page, text, author, message, function(err, resource) {
+          if (err) {
+            return next(err);
+          }
+          return res.send({});
+        });
       }
     };
   };

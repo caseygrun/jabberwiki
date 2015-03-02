@@ -127,7 +127,7 @@ module.exports = (app) ->
 					page: page,
 					v1: { text: pages[0], version: v1 },
 					v2: { text: pages[1], version: v2 }
-				})
+				}
 
 
 		list: (req,res,next) ->
