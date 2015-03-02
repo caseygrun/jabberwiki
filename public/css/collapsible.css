@@ -1,4 +1,14 @@
 
+section.collapsed > *
+{
+	display: none;
+}
+
+section.collapsed > h1, section.collapsed > h2, section.collapsed > h3, section.collapsed > h4, section.collapsed > h5, section.collapsed > h6 {
+	display: block;
+	opacity: 0.7;
+} 
+
 
 li.collapsed 
 {
